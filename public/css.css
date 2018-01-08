@@ -1,0 +1,33 @@
+/*general*/
+body {
+  font-family:Helvetica;
+}
+
+p {
+  margin:0.5em 0;
+}
+
+/*classes*/
+.flex {
+  display:flex;
+  flex-wrap:wrap;
+}
+
+/*elements*/
+#missatge {
+  width:350px;
+}
+
+#xat{
+  height:165px;
+  overflow-y:scroll;
+  width:400px;
+  border:1px solid #ccc;
+  background:#fafafa;
+}
+
+#usuaris {
+  padding-left:20px;
+  margin:0;
+}
+

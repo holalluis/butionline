@@ -1,0 +1,237 @@
+<!doctype><html><head>
+  <meta charset="utf8">
+  <meta name="viewport" content="width=device-width">
+  <link href="css.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+</head><body>
+
+<h2>Butifarra online</h2>
+
+<!--entrar a la sala-->
+<div>
+  <input id=nom_usuari placeholder="nom usuari" maxlength=30 value=lluis>
+  <button id=btn_entrar>entrar</button>
+</div>
+<hr>
+
+<!--usuaris + xat-->
+<div class=flex>
+  <div style="width:120px">
+    <p>Usuaris (<span id=comptador_usuaris></span>)</p>
+    <ul id=usuaris></ul>
+  </div>
+
+  <!--separador--><div style="margin:5px"></div>
+
+  <div>
+    <p>Xat <em id=feedback></em></p>
+    <div id=xat></div>
+    <div id=xat_controls style="display:none;margin-top:-1px">
+      <input id=missatge placeholder="missatge" maxlength=140 value=hola>
+      <button id=btn_missatge>enviar</button>
+    </div>
+  </div>
+</div><hr>
+
+<!--partida-->
+<div>
+  <link rel=stylesheet href="tapet.css">
+  <div id=tapet>
+    <div>
+      <div id=jugadorN class=jugador>N</div>
+      <div id=jugadorS class=jugador>S</div>
+      <div id=jugadorE class=jugador>E</div>
+      <div id=jugadorO class=jugador>O</div>
+    </div>
+    <div id=status>status</div>
+    <div id=triomf>trunfo</div>
+    <div id=ma>
+      <img src="/img/cartes/or09.jpg"></img>
+      <img src="/img/cartes/or01.jpg"></img>
+      <img src="/img/cartes/or12.jpg"></img>
+      <img src="/img/cartes/co09.jpg"></img>
+      <img src="/img/cartes/co01.jpg"></img>
+      <img src="/img/cartes/co12.jpg"></img>
+      <img src="/img/cartes/es09.jpg"></img>
+      <img src="/img/cartes/es01.jpg"></img>
+      <img src="/img/cartes/es12.jpg"></img>
+      <img src="/img/cartes/ba09.jpg"></img>
+      <img src="/img/cartes/ba01.jpg"></img>
+      <img src="/img/cartes/ba12.jpg"></img>
+    </div>
+  </div>
+</div>
+
+<div style=display:none>
+  <img src="/img/cartes/or01.jpg"></img>
+  <img src="/img/cartes/or02.jpg"></img>
+  <img src="/img/cartes/or03.jpg"></img>
+  <img src="/img/cartes/or04.jpg"></img>
+  <img src="/img/cartes/or05.jpg"></img>
+  <img src="/img/cartes/or06.jpg"></img>
+  <img src="/img/cartes/or07.jpg"></img>
+  <img src="/img/cartes/or08.jpg"></img>
+  <img src="/img/cartes/or09.jpg"></img>
+  <img src="/img/cartes/or10.jpg"></img>
+  <img src="/img/cartes/or11.jpg"></img>
+  <img src="/img/cartes/or12.jpg"></img>
+  <img src="/img/cartes/co01.jpg"></img>
+  <img src="/img/cartes/co02.jpg"></img>
+  <img src="/img/cartes/co03.jpg"></img>
+  <img src="/img/cartes/co04.jpg"></img>
+  <img src="/img/cartes/co05.jpg"></img>
+  <img src="/img/cartes/co06.jpg"></img>
+  <img src="/img/cartes/co07.jpg"></img>
+  <img src="/img/cartes/co08.jpg"></img>
+  <img src="/img/cartes/co09.jpg"></img>
+  <img src="/img/cartes/co10.jpg"></img>
+  <img src="/img/cartes/co11.jpg"></img>
+  <img src="/img/cartes/co12.jpg"></img>
+  <img src="/img/cartes/es01.jpg"></img>
+  <img src="/img/cartes/es02.jpg"></img>
+  <img src="/img/cartes/es03.jpg"></img>
+  <img src="/img/cartes/es04.jpg"></img>
+  <img src="/img/cartes/es05.jpg"></img>
+  <img src="/img/cartes/es06.jpg"></img>
+  <img src="/img/cartes/es07.jpg"></img>
+  <img src="/img/cartes/es08.jpg"></img>
+  <img src="/img/cartes/es09.jpg"></img>
+  <img src="/img/cartes/es10.jpg"></img>
+  <img src="/img/cartes/es11.jpg"></img>
+  <img src="/img/cartes/es12.jpg"></img>
+  <img src="/img/cartes/ba01.jpg"></img>
+  <img src="/img/cartes/ba02.jpg"></img>
+  <img src="/img/cartes/ba03.jpg"></img>
+  <img src="/img/cartes/ba04.jpg"></img>
+  <img src="/img/cartes/ba05.jpg"></img>
+  <img src="/img/cartes/ba06.jpg"></img>
+  <img src="/img/cartes/ba07.jpg"></img>
+  <img src="/img/cartes/ba08.jpg"></img>
+  <img src="/img/cartes/ba09.jpg"></img>
+  <img src="/img/cartes/ba10.jpg"></img>
+  <img src="/img/cartes/ba11.jpg"></img>
+  <img src="/img/cartes/ba12.jpg"></img>
+</div>
+
+<!--CLIENT APP-->
+<script>
+  var socket = io.connect('http://localhost:4000');
+
+  //element handlers
+  var nom_usuari=document.getElementById('nom_usuari');
+  var btn_entrar=document.getElementById('btn_entrar');
+  var comptador_usuaris=document.getElementById('comptador_usuaris')
+  var usuaris=document.getElementById('usuaris');
+  var feedback=document.getElementById('feedback');
+  var xat=document.getElementById('xat');
+  var missatge=document.getElementById('missatge');
+  var btn_missatge=document.getElementById('btn_missatge');
+
+  //variables globals + default value
+  var usuari=socket.id;
+  var usuaris_actuals=[];
+  var timeout_typing_event=false;
+
+  /*ESCOLTA EVENTS i EMET SOCKET EVENTS*/
+
+  //button entrar onclick
+  btn_entrar.addEventListener('click',function(){
+    //comprova si el nom d'usuari ja existeix
+    (function(){
+      usuari=nom_usuari.value;
+      if(usuaris_actuals.filter(u=>{return u.nom==usuari && u.id!=socket.id}).length){
+        usuari=usuari+"_2"; //modifica el nom
+        nom_usuari.value=usuari;
+      }
+    })();
+
+    //emet event entrar
+    socket.emit('entrar',usuari);
+  });
+
+  //nom usuari onkeypress
+  nom_usuari.addEventListener('keypress',function(e){
+    //si prem enter envia el missatge
+    var key = e.which || e.keyCode;
+    if (key === 13) { // 13 is enter
+      btn_entrar.dispatchEvent(new CustomEvent('click'));
+    }
+  });
+
+  //btn_missatge onclick
+  btn_missatge.addEventListener('click',function(){
+    if(missatge.value=="")return;
+    //emet event xat
+    socket.emit('xat',missatge.value);
+    //reselect missatge
+    missatge.value="";
+    missatge.select();
+  });
+
+  //missatge onkeypress
+  missatge.addEventListener('keypress',function(e){
+    //emet event typing
+    socket.emit('typing',usuari);
+    //si prem enter envia el missatge
+    var key = e.which || e.keyCode;
+    if (key === 13) { // 13 is enter
+      btn_missatge.dispatchEvent(new CustomEvent('click'));
+    }
+  });
+
+  /*ESCOLTA SOCKET EVENTS*/
+
+  socket.on('entrar',function(data){
+    xat.innerHTML+="<div style=font-size:smaller;color:green title='"+data.id+"'>"+
+      "["+data.data+"] "+
+      "<em>"+data.nom+" ha entrat al xat</em>"+
+    "</div>";
+    //scroll al top
+    xat.scrollTop=xat.scrollHeight;
+  });
+
+  socket.on('sortir',function(data){
+    xat.innerHTML+="<div style=font-size:smaller;color:red title='"+data.id+"'>"+
+      "["+data.data+"] "+
+      "<em>"+data.nom+" ha sortit del xat</em>"+
+    "</div>";
+    //scroll al top
+    xat.scrollTop=xat.scrollHeight;
+  });
+
+  //escolta event typing
+  socket.on('typing',function(nick){
+    var str="<small>("+nick+" està escrivint...)</small>";
+    feedback.innerHTML=str;
+    //elimina el missatge al cap d'uns segons
+    clearTimeout(timeout_typing_event);
+    timeout_typing_event=setTimeout(function(){feedback.innerHTML=""},5000);
+  });
+
+  //escolta event xat
+  socket.on('xat',function(data){
+    feedback.innerHTML="";
+    xat.innerHTML+="<div>"+
+      "<small>["+data.data+"] "+
+      "<strong>"+data.nick+"</strong>: "+
+      "<span>"+data.missatge+"</span>"+
+    "</div>";
+    //scroll al top
+    xat.scrollTop=xat.scrollHeight;
+  });
+
+  //escolta event refresca-usuaris
+  socket.on('refresca-usuaris',function(usuaris_connectats){
+    comptador_usuaris.innerHTML=usuaris_connectats.length;
+    usuaris_actuals=usuaris_connectats;
+    usuaris.innerHTML="";
+    usuaris_connectats.forEach(u=>{
+      if(u.id==socket.id){
+        u.nom="<b>"+u.nom+"</b>"
+        //si es el mateix usuari, desbloqueja el xat
+        document.getElementById('xat_controls').style.display='block';
+      }
+      usuaris.innerHTML+='<li title='+u.id+'>'+u.nom+'</li>';
+    });
+  });
+</script>
