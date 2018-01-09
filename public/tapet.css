@@ -1,36 +1,47 @@
 #tapet {
   background:green;
   position:relative;
-  width:800px; height:430px;
+  width:670px; 
+  height:430px;
 }
+
+/*jugador*/
 #tapet div.jugador {
   background:#00aa00;
   text-align:center;
   position:absolute;
   box-shadow: inset 0 0 10px #000000;
+  padding:2px;
+  font-size:smaller;
+  color:#333;
   width:100px; height:150px;
 }
-#tapet #jugadorN { top:10;  left:350; }
-#tapet #jugadorS { top:170; left:350; }
-#tapet #jugadorE { top:90; left:240; }
-#tapet #jugadorO { top:90; left:460; }
+#tapet #jugadorN { top:10px; left:120px; }
+#tapet #jugadorS { top:170px;left:120px; }
+#tapet #jugadorE { top:90px; left:230px; }
+#tapet #jugadorO { top:90px; left:10px; }
 
+/*status*/
 #tapet #status {
   position:absolute;
-  top:0; left:0;
+  top:0;right:0;
+  height:20px;
   border:1px solid blue;
-  font-size:20px;
   padding:5px;
   background:lightgreen;
 }
+
+/*triomf*/
 #tapet #triomf {
   position:absolute;
-  top:0; right:0;
+  top:294px; 
+  right:0;
   border:1px solid blue;
-  font-size:20px;
   padding:5px;
   background:lightgreen;
 }
+
+/*ma*/
 #tapet #ma{
   border-top:1px solid lightgreen;
   position:absolute;
@@ -38,7 +49,8 @@
   width:100%;
   height:100px;
 }
+
 #tapet #ma img {
   margin:5px;
-  margin-right:-10px;
+  margin-right:-15px;
 }
