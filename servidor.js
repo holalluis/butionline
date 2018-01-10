@@ -1,8 +1,8 @@
 //llibreries
 var express=require('express'); //js server
 var socket=require('socket.io'); //websockets
-var utils=require('./utils'); //utils (local)
-var Partida=require('./partida'); //normes butifarra. var p=new Partida();
+var utils=require('./utils.js'); //(local) utils
+var Partida=require('./partida.js'); //(local) classe partida butifarra
 
 //express setup
 var app=express();
@@ -14,20 +14,17 @@ var server=app.listen(4000,function(){
 app.use(express.static('public'));
 
 /*
-  Array usuaris connectats
-  {nom, id:socketId}
-*/
-var usuaris=[];
-
-/*
-  Array partides creades (veure 'partida.js')
-*/
-var partides=[];
+ * Array usuaris connectats [{nom,socketId}]
+ * Array partides creades (veure 'partida.js')
+ *
+**/
+var usuaris=[ ];
+var partides=[ ];
 
 //server socket setup
 var io=socket(server);
 
-//SOCKET CONNECTION LISTENER
+//SERVER SOCKET EVENT LISTENERS
 io.on('connection',function(sock){
   var ip=sock.conn.remoteAddress.split(':')[3]; //remoteAddress = "::ffff:192.168.1.131"
   console.log('nou usuari anònim ('+sock.id+', '+ip+')');
@@ -37,6 +34,253 @@ io.on('connection',function(sock){
   sock.emit('refresca-partides',partides);
 
   //SOCKET CUSTOM EVENT LISTENERS
+
+  //jugador anuncia ha recollit basa
+  sock.on('basa-recollida',function(partida_id){
+    console.log('basa recollida ('+partida_id+')');
+    
+    //get partida
+    var p=utils.getPartida(partides,partida_id);
+    p.hanRecollit++;
+    if(p.hanRecollit<4){return;}
+
+    //afegeix basa a registre de bases
+    p.bases.push(p.basa);
+
+    //mira si s'ha acabat la ronda
+    if(p.bases.length==12){
+
+      //compta els punts TODO
+
+      //anuncia ronda acabada
+      p.getJugadors().forEach(sock_id=>{
+        if(sock_id==sock.id){
+          sock.emit('ronda-acabada');
+        }else{
+          sock.broadcast.to(sock_id).emit('ronda-acabada');
+        }
+      });
+      return;
+    }
+
+    //DETERMINA QUI GUANYA PER PASSAR A LA SEGÜENT BASA
+    var triomf=p.triomf.substring(0,2);
+    var guanyador=null; //socket id del guanyador
+
+    //tradueix as i manilla a "13" i "14" per poder mirar fàcilment el número
+    p.basa.forEach(c=>{
+      if     (c.num==9)c.num=14;
+      else if(c.num==1)c.num=13;
+    });
+
+    //determina si la basa és tota del mateix pal
+    if(
+      p.basa[0].pal==p.basa[1].pal &&
+      p.basa[1].pal==p.basa[2].pal &&
+      p.basa[2].pal==p.basa[3].pal
+    ){
+      //guanya la carta més alta
+      var cartaMesAlta=0;
+      p.basa.forEach(c=>{
+        if(c.num>cartaMesAlta){
+          cartaMesAlta=c.num;
+          guanyador=c.jugador_id;
+        }
+      })
+    }else if(//mira si alguna carta és triomf
+        p.basa[0].pal==triomf ||
+        p.basa[1].pal==triomf ||
+        p.basa[2].pal==triomf ||
+        p.basa[3].pal==triomf
+    ){
+      //guanya la carta més alta del triomf
+      var cartaMesAlta=0;
+      p.basa
+        .filter(c=>{return c.pal==triomf})
+        .forEach(c=>{
+        if(c.num>cartaMesAlta){
+          cartaMesAlta=c.num;
+          guanyador=c.jugador_id;
+        }
+      });
+    }else{
+      //guanya la carta més alta del pal inicial
+      var cartaMesAlta=0;
+      p.basa
+        .filter(c=>{return c.pal==p.basa[0].pal})
+        .forEach(c=>{
+        if(c.num>cartaMesAlta){
+          cartaMesAlta=c.num;
+          guanyador=c.jugador_id;
+        }
+      });
+    }
+
+    console.log('guanyador:',guanyador);
+
+    //fes que tiri el jugador guanyador
+    //següent tirada!
+    p.actiu=guanyador;
+    p.getJugadors().forEach(sock_id=>{
+      //anuncia a cada jugador que ja es pot tirar
+      if(sock_id==sock.id){
+        sock.emit('esperant-tirada',p.actiu);
+      }else{
+        sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
+      }
+    });
+
+    //reset basa i jugadors que han recollit
+    p.hanRecollit=0;
+    p.basa=[];
+  });
+
+  //jugador intenta una tirada
+  sock.on('tirada',function(data){
+    console.log('carta jugada',data.partida_id,sock.id);
+
+    var p=utils.getPartida(partides,data.partida_id);
+    var pal=data.pal;
+    var num=data.num;
+
+    var tirada={jugador_id:sock.id,pal,num};
+
+    //comprova si la tirada és legal
+    var esLegal=(function(){
+      return true;
+      //continuar TODO
+    })();
+
+    //tirada no acceptada
+    if(esLegal==false){
+      console.log('jugada ilegal ('+sock.id+')');
+      return;
+    }
+
+    //anuncia que la jugada és legal
+    p.getJugadors().forEach(sock_id=>{
+      if(sock_id==sock.id){
+        sock.emit('tirada-legal',tirada);
+      }else{
+        sock.broadcast.to(sock_id).emit('tirada-legal',tirada);
+      }
+    });
+
+    //tirada acceptada
+    p.basa.push(tirada);
+
+    //si la basa està plena
+    if(p.basa.length==4){
+      //emet event recollir basa
+      p.getJugadors().forEach(sock_id=>{
+        //anuncia a cada jugador que ja es pot recollir la basa
+        if(sock_id==sock.id){
+          sock.emit('recollir-basa');
+        }else{
+          sock.broadcast.to(sock_id).emit('recollir-basa');
+        }
+      });
+      return;
+    }
+
+    //següent tirada!
+    p.actiu=p.getNextJugador(sock.id);
+    p.getJugadors().forEach(sock_id=>{
+      //anuncia a cada jugador que ja es pot tirar
+      if(sock_id==sock.id){
+        sock.emit('esperant-tirada',p.actiu);
+      }else{
+        sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
+      }
+    });
+  });
+
+  //creador starts partida
+  sock.on('start-partida',function(){
+    console.log('creador vol iniciar partida ('+sock.id+')');
+    /*INICI PARTIDA*/
+    io.sockets.emit('start-partida',sock.id);
+  });
+
+  //creador starts ronda
+  sock.on('start-ronda',function(){
+    console.log('creador vol iniciar ronda ('+sock.id+')');
+
+    //get partida
+    var p=utils.getPartida(partides,sock.id);
+
+    p.triomf=null;   //oros, copes, espases, bastos, butifarra, delegar
+    p.actiu=null;    //socket id del jugador que ha de tirar
+    p.basa=[];       //array de cartes tirades a la basa actual [{pal,num,jugador_id}] 
+    p.bases=[];      //array de bases jugades 
+    p.hanRecollit=0; //nº de jugadors que han recollit la basa
+
+    /*RONDA*/
+    console.log("repartint cartes ("+sock.id+")")
+
+    //1. repartir cartes (=assignar propietari)
+    var jugadors=p.getJugadors(); //[N,S,E,O]
+    var cartes=p.repartir();
+    jugadors.forEach(sock_id=>{
+      //filtra cartes per propietari (sock id)
+      var ma=cartes.filter(c=>{return c.propietari==sock_id});
+      //reparteix a cada socket PER SEPARAT
+      if(sock_id==sock.id){
+        sock.emit('repartir',ma);
+      }else{
+        sock.broadcast.to(sock_id).emit('repartir',ma);
+      }
+    });
+
+    //2. determina qui canta i emet sock_id
+    var canta=p.quiCanta();
+    console.log("canta",canta);
+    jugadors.forEach(sock_id=>{
+      if(sock_id==sock.id){
+        sock.emit('anuncia-qui-canta',canta);
+      }else{
+        sock.broadcast.to(sock_id).emit('anuncia-qui-canta',canta);
+      }
+    });
+  });
+
+  //remote user tria triomf
+  sock.on('triomf-triat',function(data){
+    var creador=data.creador;
+    var pal=data.pal;
+    //get partida
+    var p=utils.getPartida(partides,creador);
+    console.log("pal triat: "+pal+" ("+creador+")");
+    //seteja pal triat a la partida
+    p.triomf=pal;
+    //anuncia als jugadors el pal triat
+    p.getJugadors().forEach(sock_id=>{
+      //reparteix a cada socket PER SEPARAT
+      if(sock_id==sock.id){
+        sock.emit('triomf-triat',pal);
+      }else{
+        sock.broadcast.to(sock_id).emit('triomf-triat',pal);
+      }
+    });
+
+    //si es delega emet 'delegar' al company
+    if(pal=="delegar"){
+      var company=p.getCompany(p.canta);
+      console.log("delegat a "+company);
+      sock.broadcast.to(company).emit('delegar');
+    }else{
+      //comença la partida
+      p.actiu=p.getNextJugador(p.canta);
+      p.getJugadors().forEach(sock_id=>{
+        //anuncia a cada jugador que ja es pot tirar
+        if(sock_id==sock.id){
+          sock.emit('esperant-tirada',p.actiu);
+        }else{
+          sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
+        }
+      });
+    }
+  });
 
   //remote user crea partida
   sock.on('crear-partida',function(){
@@ -110,18 +354,6 @@ io.on('connection',function(sock){
       p.esborraJugador(sock.id);
       io.sockets.emit('refresca-partides',partides);
     }
-  });
-
-  //host starts partida
-  sock.on('start-partida',function(){
-    console.log('creador vol iniciar partida ('+sock.id+')'); 
-
-    //continuar aqui here
-
-    //obtenir partida des de "partides"
-    var p=utils.getPartida(partides,sock.id);
-
-    io.sockets.emit('start-partida',sock.id);
   });
 
   //remote user disconnected

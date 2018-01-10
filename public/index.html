@@ -1,9 +1,7 @@
 <!doctype html><html><head>
   <meta charset="utf8">
   <title>Butifarra</title>
-  <!--
-  <meta name="viewport" content="width=device-width">
-  -->
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
   <link href="css.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 </head><body onload="init()">
@@ -12,17 +10,23 @@
 
 <!--entrar a la sala-->
 <div class=flex>
-  <input id=nom_usuari placeholder="nom usuari" maxlength=30 value='anònim'>
+  <div>Entrar&nbsp;</div>
+  <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=30 value='avi'>
   <button id=btn_entrar>entrar</button>
+  <script>
+    document.getElementById('nom_usuari').value+="_"+(Math.floor(Math.random()*1000)+1);
+  </script>
 </div>
 
 <hr>
+
+<div id=main style=visibility:hidden>
 
 <!--usuaris + xat-->
 <div class=flex>
   <!--llista usuaris xat-->
   <div style="width:150px">
-    <p>Usuaris (<span id=comptador_usuaris>0</span>)</p>
+    <p>Usuaris online (<span id=comptador_usuaris>0</span>)</p>
     <ul id=usuaris></ul>
   </div>
 
@@ -33,7 +37,7 @@
     <p>Xat general <em id=feedback></em></p>
     <div id=xat></div>
     <div id=xat_controls style="visibility:hidden" class=flex>
-      <input id=missatge placeholder="missatge" maxlength=140 value=hola>
+      <input id=missatge placeholder="Escriu un missatge" maxlength=140 value=hola>
       <button id=btn_missatge>enviar</button>
     </div>
   </div>
@@ -52,64 +56,52 @@
 
 <!--partida actual-->
 <div class=flex>
-  <link rel=stylesheet href="tapet.css">
-
+  <!--css--><link rel=stylesheet href="tapet.css">
   <!--tapete-->
   <div id=tapet taula=1>
+    <!--lloc cartes-->
     <div>
-      <div id=jugadorN class=jugador>
-        <p>~esperant inici</p>
-      </div>
-      <div id=jugadorS class=jugador>
-        <p>~esperant inici</p>
-      </div>
-      <div id=jugadorE class=jugador>
-        <p>~esperant inici</p>
-      </div>
-      <div id=jugadorO class=jugador>
-        <p>~esperant inici</p>
-      </div>
+      <div id=jugadorN class=jugador></div>
+      <div id=jugadorS class=jugador></div>
+      <div id=jugadorE class=jugador></div>
+      <div id=jugadorO class=jugador></div>
     </div>
-    <div id=status>esperant creador comenci partida</div>
-    <div id=triomf>triomf</div>
+
+    <!--status+triomf-->
+    <div id=status_partida>esperant nova partida</div>
+    <div id=triomf style=visibility:hidden></div>
+
+    <!--ma-->
     <div id=ma>
-      <img src="/img/cartes/or09.jpg"></img>
-      <img src="/img/cartes/or01.jpg"></img>
-      <img src="/img/cartes/or12.jpg"></img>
-      <img src="/img/cartes/co09.jpg"></img>
-      <img src="/img/cartes/co01.jpg"></img>
-      <img src="/img/cartes/co12.jpg"></img>
-      <img src="/img/cartes/es09.jpg"></img>
-      <img src="/img/cartes/es01.jpg"></img>
-      <img src="/img/cartes/es12.jpg"></img>
-      <img src="/img/cartes/ba09.jpg"></img>
-      <img src="/img/cartes/ba01.jpg"></img>
-      <img src="/img/cartes/ba12.jpg"></img>
+      <!--provisional
+      <img src="/img/cartes/or09.jpg">
+      <img src="/img/cartes/or01.jpg">
+      <img src="/img/cartes/or12.jpg">
+      -->
     </div>
   </div>
-
   <!--separador--><div class=separador></div>
 
   <!--info + log-->
   <div>
+    <!--infoPartida-->
     <ul id=infoPartida>
       <li>Obligada/101
       <li>Equip 1: 0 punts
         <ul style=padding-left:5px>
-          <li jugador=N>~esperant jugador
-          <li jugador=S>~esperant jugador
+          <li jugador=N>
+          <li jugador=S>
         </ul>
       <li>Equip 2: 0 punts
         <ul style=padding-left:5px>
-          <li>~esperant jugador
-          <li>~esperant jugador
+          <li jugador=E>
+          <li jugador=O>
         </ul>
-      <li>Ronda 1
-      <li>Va de: <span id=triomf>&mdash;</span> 
       <li>Partida NO contrada
     </ul>
     <!--separador--><div class=separador></div>
-    <div id=log></div>
+
+    <!--log--><div id=log></div>
   </div>
 </div>
 
@@ -165,7 +157,17 @@
   <img src="/img/cartes/ba12.jpg"></img>
 </div>
 
+<div>
+  <p><b>Per fer</b></p>
+  <ul>
+    <li>Contrar/Recontrar/SantVicenç
+    <li>Obligar a tirar cartes
+  </ul>
+</div>
+
 <footer style=height:500px></footer>
+
+</div>
 
 <!--client app-->
 <script src="client.js"></script>

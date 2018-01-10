@@ -26,7 +26,7 @@
     flex-wrap:wrap;
   }
   .separador {
-    margin:3px;
+    margin:1px;
   }
 
 /*elements*/
@@ -65,5 +65,6 @@
     height:281px;
     overflow-y:auto;
     font-size:smaller;
-    width:200px;
+    width:268px;
+    font-family:monospace;
   }

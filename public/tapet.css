@@ -3,6 +3,7 @@
   position:relative;
   width:670px; 
   height:430px;
+  user-select:none;
 }
 
 /*jugador*/
@@ -21,8 +22,21 @@
 #tapet #jugadorE { top:90px; left:230px; }
 #tapet #jugadorO { top:90px; left:10px; }
 
+/*jugador que ha de tirar*/
+#tapet div.jugador.actiu {
+  color:blue;
+  font-weight:bold;
+}
+
+/*carta a terra*/
+#tapet div.jugador img{
+  display:block;
+  margin:auto;
+  margin-top:13px;
+}
+
 /*status*/
-#tapet #status {
+#tapet #status_partida {
   position:absolute;
   top:0;right:0;
   height:20px;
@@ -34,10 +48,9 @@
 /*triomf*/
 #tapet #triomf {
   position:absolute;
-  top:294px; 
+  top:293px;
   right:0;
   border:1px solid blue;
-  padding:5px;
   background:lightgreen;
 }
 
@@ -53,4 +66,23 @@
 #tapet #ma img {
   margin:5px;
   margin-right:-15px;
+}
+
+#tapet div.menu-cantar {
+  text-align:center;
+  background:#fff785;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  border:4px solid rgba(5, 5, 5, .5);
+  padding:5px;
+  position:absolute;
+  top:80px;
+  left:10px;
+}
+
+#tapet div.menu-cantar img {
+  border:1px solid transparent;
+}
+
+#tapet div.menu-cantar img:hover {
+  border:1px solid blue;
 }
