@@ -29,6 +29,7 @@
     display:flex;
     flex-wrap:wrap;
   }
+
   .separador{
     margin:1px;
   }
@@ -59,6 +60,10 @@
   #missatge{
     width:350px;
     display:block;
+  }
+
+  #partides{
+    background:#f5f5f5;
   }
 
   #btn_missatge{

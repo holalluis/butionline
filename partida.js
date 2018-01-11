@@ -1,5 +1,5 @@
 /*
- * Backend partida butifarra
+ * Backend partida botifarra
  *
  */
 function Partida(creador){
@@ -23,15 +23,29 @@ function Partida(creador){
   };
 
   //variables de ronda
-  this.canta=null;    //socket id del jugador que canta
-  this.triomf=null;   //oros, copes, espases, bastos, butifarra, delegar
-  this.actiu=null;    //socket id del jugador que ha de tirar
-  this.basa=[];       //array de cartes tirades a la basa actual [{pal,num,jugador_id}] 
-  this.bases=[];      //array de bases jugades 
-  this.hanRecollit=0; //nº de jugadors que han recollit la basa
+  this.canta=null;      //socket id del jugador que canta
+  this.triomf=null;     //oros, copes, espases, bastos, botifarra, delegar
+  this.multiplicador=1; //contrar:2, recontrar:4, santvicenç:8
+  this.actiu=null;      //socket id del jugador que ha de tirar
+  this.basa=[];         //array de cartes tirades a la basa actual [{pal,num,jugador_id}]
+  this.bases=[];        //array de bases jugades
+  this.hanRecollit=0;   //nº de jugadors que han recollit la basa
 };
 
 module.exports = Partida;
+
+//reset variables per poder recomençar partida
+Partida.prototype.reset=function(){
+  this.equips[1].punts=0;
+  this.equips[2].punts=0;
+  this.canta=null;
+  this.triomf=null;
+  this.multiplicador=1;
+  this.actiu=null;
+  this.basa=[];
+  this.bases=[];
+  this.hanRecollit=0;
+};
 
 //compta jugadors N+S vs E+O
 Partida.prototype.comptaJugadors=function(){
@@ -89,7 +103,7 @@ Partida.prototype.esborraJugador=function(sock_id){
 //check if sock_id forma part de la partida
 Partida.prototype.isPart=function(sock_id){
   if([
-    this.equips[1].jugadorN, 
+    this.equips[1].jugadorN,
     this.equips[1].jugadorS,
     this.equips[2].jugadorE,
     this.equips[2].jugadorO,
@@ -241,4 +255,154 @@ Partida.prototype.getNextJugador=function(jugador_id){
   else if(jugador_id==this.equips[2].jugadorO) return this.equips[1].jugadorS;
   else 
     return false;
+};
+
+//guanyador basa
+Partida.prototype.getGuanyador=function(basa){
+  /*
+    Algoritme determinar guanyador d'una basa. Es mira:
+      1) si tota la basa és del mateix pal: carta alta
+      2) si hi ha algun triomf: carta alta triomf
+      3) pal inicial: carta alta pal inicial
+  */
+
+  //comprovacions input
+  if(basa.length!=4){
+    console.log('error: basa incorrecta');
+    return false;
+  }
+
+  //retorn
+  var guanyador;
+
+  //triomf string
+  var triomf=this.triomf.substring(0,2); //'or','co','es','ba','bo'
+
+  //converteix As i Manilla a "13" i "14" per comparar fàcilment número
+  basa.forEach(c=>{
+    if     (c.num==9) c.num=14;
+    else if(c.num==1) c.num=13;
+  });
+
+  //1. Determina si la basa és tota del mateix pal
+  if(
+    basa[0].pal==basa[1].pal &&
+    basa[1].pal==basa[2].pal &&
+    basa[2].pal==basa[3].pal
+  ){
+    var cartaMesAlta=0;
+    basa.forEach(c=>{
+      if(c.num>cartaMesAlta){
+        cartaMesAlta=c.num;
+        guanyador=c.jugador_id;
+      }
+    });
+  }else if(
+    //2. Mira si alguna carta és triomf
+    basa[0].pal==triomf ||
+    basa[1].pal==triomf ||
+    basa[2].pal==triomf ||
+    basa[3].pal==triomf
+  ){
+    var cartaMesAlta=0;
+    basa
+      .filter(c=>{return c.pal==triomf})
+      .forEach(c=>{
+      if(c.num>cartaMesAlta){
+        cartaMesAlta=c.num;
+        guanyador=c.jugador_id;
+      }
+    });
+  }else{
+    //3. Carta alta pal inicial
+    var cartaMesAlta=0;
+    basa
+      .filter(c=>{return c.pal==basa[0].pal})
+      .forEach(c=>{
+      if(c.num>cartaMesAlta){
+        cartaMesAlta=c.num;
+        guanyador=c.jugador_id;
+      }
+    });
+  }
+
+  return guanyador;
+};
+
+Partida.prototype.getEquip=function(jugador_id){
+  if     (jugador_id==this.equips[1].jugadorN) return 1;
+  else if(jugador_id==this.equips[1].jugadorS) return 1;
+  else if(jugador_id==this.equips[2].jugadorE) return 2;
+  else if(jugador_id==this.equips[2].jugadorO) return 2;
+  else return false;
+};
+
+//compta punts ronda
+Partida.prototype.comptaPunts=function(bases){
+  console.log("multiplicador:",this.multiplicador);
+
+  //separar les bases en 2 pilons
+  var bases_equip1=[];
+  var bases_equip2=[];
+
+  //guanyador és jugador_id primera carta base següent
+  //es pot saber amb les 11 primeres bases
+  //la base 12 s'ha de determinar amb "this.getGuanyador"
+  for(var i=0;i<12;i++){
+    var guanyador;
+    if(i==11){ guanyador=this.getGuanyador(bases[11]);}
+    else{      guanyador=bases[i+1][0].jugador_id;}
+
+    //determina equip i piló bases
+    var equip=this.getEquip(guanyador);
+    if(equip==1){
+      bases_equip1.push(bases[i]);
+    }else if(equip==2){
+      bases_equip2.push(bases[i]);
+    }else{
+      console.log('error equip bases');
+      return;
+    }
+  }
+
+  //només cal comptar un piló (equip 1)
+  var punts_e1=0;
+  var punts_e2=0;
+  bases_equip1.forEach(b=>{
+    //1 punt basa
+    punts_e1++;
+    //punts per carta
+    b.forEach(c=>{
+      if     (c.num==10) punts_e1+=1; //puta
+      else if(c.num==11) punts_e1+=2; //cavall
+      else if(c.num==12) punts_e1+=3; //rei
+      else if(c.num==13) punts_e1+=4; //as
+      else if(c.num==14) punts_e1+=5; //manilla
+    });
+  });
+
+  //determina els punts equip 2
+  if(punts_e1>36){
+    punts_e1 = punts_e1-36;
+    punts_e2 = 0;
+  }else{
+    punts_e2 = 36-punts_e1;
+    punts_e1 = 0;
+  }
+
+  //botifarra val per 2
+  if(this.triomf=="botifarra"){
+    console.log("botifarra: punts x 2");
+    punts_e1*=2;
+    punts_e2*=2;
+  }
+
+  //aplica multiplicador (contrar,recontrar,santvicenç);
+  punts_e1*=this.multiplicador;
+  punts_e2*=this.multiplicador;
+
+  return {
+    equip1:punts_e1,
+    equip2:punts_e2,
+  }
 };

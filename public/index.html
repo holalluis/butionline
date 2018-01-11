@@ -11,7 +11,7 @@
 <!--entrar a la sala-->
 <div class=flex>
   <div>Entrar&nbsp;</div>
-  <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=30 value='avi'>
+  <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=30 value='nai'>
   <button id=btn_entrar>entrar</button>
   <script>
     document.getElementById('nom_usuari').value+="_"+(Math.floor(Math.random()*1000)+1);
@@ -20,9 +20,9 @@
 
 <hr>
 
-<div id=main style=visibility:hidden>
+<div id=main style=display:none>
 
-<!--usuaris + xat-->
+<!--usuaris+xat-->
 <div class=flex>
   <!--llista usuaris xat-->
   <div style="width:150px">
@@ -54,10 +54,15 @@
   </div>
 </div><hr>
 
+<!--botó anar al tapet-->
+<div>
+  <button onclick="window.location='#tapet'" style="padding:2px 40px">&darr;</button>
+</div>
+
 <!--partida actual-->
 <div class=flex>
   <!--css--><link rel=stylesheet href="tapet.css">
-  <!--tapete-->
+  <!--tapet-->
   <div id=tapet taula=1>
     <!--lloc cartes-->
     <div>
@@ -82,21 +87,13 @@
   </div>
   <!--separador--><div class=separador></div>
 
-  <!--info + log-->
+  <!--info+log-->
   <div>
     <!--infoPartida-->
     <ul id=infoPartida>
       <li>Obligada/101
-      <li>Equip 1: 0 punts
-        <ul style=padding-left:5px>
-          <li jugador=N>
-          <li jugador=S>
-        </ul>
-      <li>Equip 2: 0 punts
-        <ul style=padding-left:5px>
-          <li jugador=E>
-          <li jugador=O>
-        </ul>
+      <li>Equip 1: <span id=punts_e1>0</span> punts
+      <li>Equip 2: <span id=punts_e2>0</span> punts
       <li>Partida NO contrada
     </ul>
     <!--separador--><div class=separador></div>
@@ -105,7 +102,7 @@
   </div>
 </div>
 
-<!--cache cartes-->
+<!--cache preload cartes-->
 <div style=display:none>
   <img src="/img/cartes/or01.jpg"></img>
   <img src="/img/cartes/or02.jpg"></img>
@@ -157,12 +154,15 @@
   <img src="/img/cartes/ba12.jpg"></img>
 </div>
 
+<!--per fer-->
 <div>
-  <p><b>Per fer</b></p>
-  <ul>
+  <b>Tasques per programar:</b>
+  <ol>
     <li>Contrar/Recontrar/SantVicenç
-    <li>Obligar a tirar cartes
-  </ul>
+    <li>Cartes obligades (client)
+    <li>Poder veure última basa
+    <li>Poder canviar objectiu de punts
+  </ol>
 </div>
 
 <footer style=height:500px></footer>

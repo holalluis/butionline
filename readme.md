@@ -1,6 +1,6 @@
-# butifarra online
+# botifarra online
 
-Joc de la butifarra online inspirat en el butinet (butinet.cat).
+Joc de la botifarra online inspirat en el butinet (butinet.cat).
 
 La motivació principal per crear aquesta versió és les restriccions que imposa
 el butinet actualment (2018):

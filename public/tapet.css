@@ -1,7 +1,7 @@
 #tapet {
   background:green;
   position:relative;
-  width:670px; 
+  width:670px;
   height:430px;
   user-select:none;
 }
@@ -9,6 +9,7 @@
 /*jugador*/
 #tapet div.jugador {
   background:#00aa00;
+  border-radius:10px;
   text-align:center;
   position:absolute;
   box-shadow: inset 0 0 10px #000000;
@@ -71,7 +72,7 @@
 #tapet div.menu-cantar {
   text-align:center;
   background:#fff785;
-  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  box-shadow: 0 1px 20px rgb(0,0,0);
   border:4px solid rgba(5, 5, 5, .5);
   padding:5px;
   position:absolute;

@@ -2,7 +2,7 @@
 var express=require('express'); //js server
 var socket=require('socket.io'); //websockets
 var utils=require('./utils.js'); //(local) utils
-var Partida=require('./partida.js'); //(local) classe partida butifarra
+var Partida=require('./partida.js'); //(local) classe Partida
 
 //express setup
 var app=express();
@@ -13,23 +13,22 @@ var server=app.listen(4000,function(){
 //static files
 app.use(express.static('public'));
 
-/*
- * Array usuaris connectats [{nom,socketId}]
- * Array partides creades (veure 'partida.js')
- *
-**/
-var usuaris=[ ];
-var partides=[ ];
-
-//server socket setup
+//bind new server socket
 var io=socket(server);
 
-//SERVER SOCKET EVENT LISTENERS
+/*
+  Array usuaris connectats [{nom,socketId}]
+  Array partides creades (veure 'partida.js')
+*/
+var usuaris=[];
+var partides=[];
+
+//SERVER SOCKET: ESCOLTA CLIENT EVENTS
 io.on('connection',function(sock){
-  var ip=sock.conn.remoteAddress.split(':')[3]; //remoteAddress = "::ffff:192.168.1.131"
+  var ip=sock.conn.remoteAddress.split(':')[3]; //exemple "::ffff:192.168.1.131"
   console.log('nou usuari anònim ('+sock.id+', '+ip+')');
 
-  //1. envia llista usuaris i partides actual
+  //envia llista usuaris i partides actuals
   sock.emit('refresca-usuaris',usuaris);
   sock.emit('refresca-partides',partides);
 
@@ -41,88 +40,61 @@ io.on('connection',function(sock){
     
     //get partida
     var p=utils.getPartida(partides,partida_id);
+
+    //augmenta comptador jugadors que han recollit
     p.hanRecollit++;
+
+    //només si tothom ha recollit
     if(p.hanRecollit<4){return;}
 
     //afegeix basa a registre de bases
     p.bases.push(p.basa);
 
-    //mira si s'ha acabat la ronda
+    //check si ronda ha acabat
     if(p.bases.length==12){
+      //compta els punts
+      var punts=p.comptaPunts(p.bases);
+      console.log(punts);
 
-      //compta els punts TODO
+      //update punts
+      p.equips[1].punts+=punts.equip1;
+      p.equips[2].punts+=punts.equip2;
 
       //anuncia ronda acabada
       p.getJugadors().forEach(sock_id=>{
         if(sock_id==sock.id){
-          sock.emit('ronda-acabada');
+          sock.emit('ronda-acabada',punts);
         }else{
-          sock.broadcast.to(sock_id).emit('ronda-acabada');
+          sock.broadcast.to(sock_id).emit('ronda-acabada',punts);
         }
       });
+
+      //mira si s'ha acabat la partida
+      if(p.equips[1].punts>=p.objectiu || p.equips[2].punts>=p.objectiu){
+        var p1=p.equips[1].punts;
+        var p2=p.equips[2].punts;
+        console.log('partida acabada ('+p1+' a '+p2+')');
+
+        //reseteja partida per poder tornar a començar
+        p.reset();
+        p.getJugadors().forEach(sock_id=>{
+          if(sock_id==sock.id){
+            sock.emit('refresca-partides',partides);
+          }else{
+            sock.broadcast.to(sock_id).emit('refresca-partides',partides);
+          }
+        });
+      }
       return;
     }
 
     //DETERMINA QUI GUANYA PER PASSAR A LA SEGÜENT BASA
-    var triomf=p.triomf.substring(0,2);
-    var guanyador=null; //socket id del guanyador
-
-    //tradueix as i manilla a "13" i "14" per poder mirar fàcilment el número
-    p.basa.forEach(c=>{
-      if     (c.num==9)c.num=14;
-      else if(c.num==1)c.num=13;
-    });
-
-    //determina si la basa és tota del mateix pal
-    if(
-      p.basa[0].pal==p.basa[1].pal &&
-      p.basa[1].pal==p.basa[2].pal &&
-      p.basa[2].pal==p.basa[3].pal
-    ){
-      //guanya la carta més alta
-      var cartaMesAlta=0;
-      p.basa.forEach(c=>{
-        if(c.num>cartaMesAlta){
-          cartaMesAlta=c.num;
-          guanyador=c.jugador_id;
-        }
-      })
-    }else if(//mira si alguna carta és triomf
-        p.basa[0].pal==triomf ||
-        p.basa[1].pal==triomf ||
-        p.basa[2].pal==triomf ||
-        p.basa[3].pal==triomf
-    ){
-      //guanya la carta més alta del triomf
-      var cartaMesAlta=0;
-      p.basa
-        .filter(c=>{return c.pal==triomf})
-        .forEach(c=>{
-        if(c.num>cartaMesAlta){
-          cartaMesAlta=c.num;
-          guanyador=c.jugador_id;
-        }
-      });
-    }else{
-      //guanya la carta més alta del pal inicial
-      var cartaMesAlta=0;
-      p.basa
-        .filter(c=>{return c.pal==p.basa[0].pal})
-        .forEach(c=>{
-        if(c.num>cartaMesAlta){
-          cartaMesAlta=c.num;
-          guanyador=c.jugador_id;
-        }
-      });
-    }
-
+    var guanyador=p.getGuanyador(p.basa); //sock id guanyador
     console.log('guanyador:',guanyador);
 
-    //fes que tiri el jugador guanyador
-    //següent tirada!
+    //anuncia a cada jugador següent tirada
     p.actiu=guanyador;
     p.getJugadors().forEach(sock_id=>{
-      //anuncia a cada jugador que ja es pot tirar
       if(sock_id==sock.id){
         sock.emit('esperant-tirada',p.actiu);
       }else{
@@ -209,11 +181,12 @@ io.on('connection',function(sock){
     //get partida
     var p=utils.getPartida(partides,sock.id);
 
-    p.triomf=null;   //oros, copes, espases, bastos, butifarra, delegar
-    p.actiu=null;    //socket id del jugador que ha de tirar
-    p.basa=[];       //array de cartes tirades a la basa actual [{pal,num,jugador_id}] 
-    p.bases=[];      //array de bases jugades 
-    p.hanRecollit=0; //nº de jugadors que han recollit la basa
+    p.multiplicador=1; //no contrat per defecte
+    p.triomf=null;     //oros, copes, espases, bastos, botifarra, delegar
+    p.actiu=null;      //socket id del jugador que ha de tirar
+    p.basa=[];         //array de cartes tirades a la basa actual [{pal,num,jugador_id}] 
+    p.bases=[];        //array de bases jugades 
+    p.hanRecollit=0;   //nº de jugadors que han recollit la basa
 
     /*RONDA*/
     console.log("repartint cartes ("+sock.id+")")
