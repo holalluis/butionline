@@ -116,7 +116,7 @@ var socket = io.connect('http://192.168.1.129:4000');
     btn_entrar.innerHTML="canviar nom";
 
     //canvia el <title></title>
-    document.title="Butifarra - "+usuari;
+    document.title="Botifarra - "+usuari;
 
     //fes la resta de la pàgina visible
     document.getElementById('main').style.display='block';
