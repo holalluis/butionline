@@ -1,7 +1,7 @@
 #tapet {
   background:green;
   position:relative;
-  width:670px;
+  width:620px;
   height:430px;
   user-select:none;
 }
@@ -86,4 +86,10 @@
 
 #tapet div.menu-cantar img:hover {
   border:1px solid blue;
+}
+
+/*botons contrar/recontrar/santvicenç*/
+#tapet div.menu-cantar button {
+  padding:10px 16px;
+  margin:0 5px;
 }

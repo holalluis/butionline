@@ -37,7 +37,7 @@ io.on('connection',function(sock){
   //jugador anuncia ha recollit basa
   sock.on('basa-recollida',function(partida_id){
     console.log('basa recollida ('+partida_id+')');
-    
+
     //get partida
     var p=utils.getPartida(partides,partida_id);
 
@@ -171,7 +171,16 @@ io.on('connection',function(sock){
   sock.on('start-partida',function(){
     console.log('creador vol iniciar partida ('+sock.id+')');
     /*INICI PARTIDA*/
-    io.sockets.emit('start-partida',sock.id);
+    //get partida
+    var p=utils.getPartida(partides,sock.id);
+    //anuncia als jugadors que la partida comença
+    p.getJugadors().forEach(sock_id=>{
+      if(sock_id==sock.id){
+        sock.emit('start-partida',sock.id);
+      }else{
+        sock.broadcast.to(sock_id).emit('start-partida',sock.id);
+      }
+    });
   });
 
   //creador starts ronda
@@ -181,12 +190,14 @@ io.on('connection',function(sock){
     //get partida
     var p=utils.getPartida(partides,sock.id);
 
-    p.multiplicador=1; //no contrat per defecte
-    p.triomf=null;     //oros, copes, espases, bastos, botifarra, delegar
-    p.actiu=null;      //socket id del jugador que ha de tirar
-    p.basa=[];         //array de cartes tirades a la basa actual [{pal,num,jugador_id}] 
-    p.bases=[];        //array de bases jugades 
-    p.hanRecollit=0;   //nº de jugadors que han recollit la basa
+    p.triomf=null;
+    p.recontrar=null;
+    p.santvicenç=null;
+    p.multiplicador=null;
+    p.actiu=null;
+    p.basa=[];
+    p.bases=[];
+    p.hanRecollit=0;
 
     /*RONDA*/
     console.log("repartint cartes ("+sock.id+")")
@@ -236,23 +247,147 @@ io.on('connection',function(sock){
       }
     });
 
+    //el primer de tirar serà el següent al de cantar
+    p.actiu=p.getNextJugador(p.canta);
+
     //si es delega emet 'delegar' al company
     if(pal=="delegar"){
       var company=p.getCompany(p.canta);
       console.log("delegat a "+company);
       sock.broadcast.to(company).emit('delegar');
     }else{
-      //comença la partida
-      p.actiu=p.getNextJugador(p.canta);
-      p.getJugadors().forEach(sock_id=>{
-        //anuncia a cada jugador que ja es pot tirar
-        if(sock_id==sock.id){
-          sock.emit('esperant-tirada',p.actiu);
-        }else{
-          sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
-        }
-      });
+      //CONTRAR/RECONTRAR/SANTVICENÇ
+      //anuncia als rivals si volen contrar
+      var rival1=p.getNextJugador(p.canta);
+      var rival2=p.getCompany(rival1);
+      sock.broadcast.to(rival1).emit('esperant-contro');
+      sock.broadcast.to(rival2).emit('esperant-contro');
     }
+  });
+
+  //remote user vol contrar
+  sock.on('contrar',function(data){
+    console.log('jugador vol contrar?',data.contrar);
+    var p=utils.getPartida(partides,data.partida_id);
+
+    //get rivals
+    var rival1=p.getNextJugador(sock.id);
+    var rival2=p.getCompany(rival1);
+
+    //processa resposta
+    if(p.multiplicador==1){
+      console.log('company no vol contrar');
+      if(data.contrar){
+        console.log('usuari vol contrar');
+        p.multiplicador=2;
+        //emet recontrar als rivals
+        sock.broadcast.to(rival1).emit('esperant-recontro');
+        sock.broadcast.to(rival2).emit('esperant-recontro');
+      }else{
+        //ningú vol contrar: començar partida
+        //emet 'esperant-tirada'
+        p.getJugadors().forEach(sock_id=>{
+          if(sock_id==sock.id){
+            sock.emit('anunci-multiplicador',p.multiplicador);
+            sock.emit('esperant-tirada',p.actiu);
+          }
+          else{
+            sock.broadcast.to(sock_id).emit('anunci-multiplicador',p.multiplicador);
+            sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
+          }
+        });
+      }
+    }else if(p.multiplicador==2){
+      console.log('company vol contrar');
+      //emet recontrar als rivals
+      sock.broadcast.to(rival1).emit('esperant-recontro');
+      sock.broadcast.to(rival2).emit('esperant-recontro');
+    }else if(p.multiplicador==null){
+      console.log('resposta contrar rebuda. Company encara no ha respost');
+      p.multiplicador = data.contrar ? 2 : 1;
+      return;
+    }
+  });
+
+  //remote user vol recontrar
+  sock.on('recontrar',function(data){
+    console.log('jugador vol recontrar?',data.recontrar);
+    var p=utils.getPartida(partides,data.partida_id);
+
+    //get rivals
+    var rival1=p.getNextJugador(sock.id);
+    var rival2=p.getCompany(rival1);
+
+    //processa resposta
+    if(p.recontrar==false){
+      console.log('company no vol recontrar');
+      if(data.recontrar){
+        console.log('usuari vol recontrar');
+        p.multiplicador=4;
+        //emet santvicenç als rivals
+        sock.broadcast.to(rival1).emit('esperant-santvicenç');
+        sock.broadcast.to(rival2).emit('esperant-santvicenç');
+      }else{
+        //ningú vol recontrar: començar partida
+        //emet 'esperant-tirada'
+        p.getJugadors().forEach(sock_id=>{
+          if(sock_id==sock.id){
+            sock.emit('anunci-multiplicador',p.multiplicador);
+            sock.emit('esperant-tirada',p.actiu);
+          }
+          else{
+            sock.broadcast.to(sock_id).emit('anunci-multiplicador',p.multiplicador);
+            sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
+          }
+        });
+      }
+    }else if(p.recontrar==true){
+      console.log('company vol recontrar');
+      p.multiplicador=4;
+      //emet santvicenç als rivals
+      sock.broadcast.to(rival1).emit('esperant-santvicenç');
+      sock.broadcast.to(rival2).emit('esperant-santvicenç');
+    }else if(p.recontrar==null){
+      console.log('resposta recontrar rebuda. Company encara no ha respost');
+      p.recontrar = data.recontrar;
+      return;
+    }
+  });
+
+  //remote user vol fer santvicenç
+  sock.on('santvicenç',function(data){
+    console.log('jugador vol santvicenç?',data.santvicenç);
+    var p=utils.getPartida(partides,data.partida_id);
+
+    //processa resposta
+    if(p.santvicenç==false){
+      console.log('company no vol santvicenç');
+      if(data.santvicenç){
+        console.log('usuari vol santvicenç');
+        p.santvicenç=true;
+      }
+    }else if(p.santvicenç==null){
+      console.log('resposta santvicenç rebuda. Company encara no ha respost');
+      p.santvicenç = data.santvicenç;
+      return;
+    }
+
+    //aplica santvicenç
+    if(p.santvicenç){p.multiplicador=8;}
+
+    //comença la partida
+    //emet 'esperant-tirada'
+    p.getJugadors().forEach(sock_id=>{
+      //anuncia a cada jugador que ja es pot tirar
+      if(sock_id==sock.id){
+        sock.emit('anunci-multiplicador',p.multiplicador);
+        sock.emit('esperant-tirada',p.actiu);
+      }
+      else{
+        sock.broadcast.to(sock_id).emit('anunci-multiplicador',p.multiplicador);
+        sock.broadcast.to(sock_id).emit('esperant-tirada',p.actiu);
+      }
+    });
   });
 
   //remote user crea partida

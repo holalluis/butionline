@@ -10,11 +10,31 @@
 
 <!--entrar a la sala-->
 <div class=flex>
-  <div>Entrar&nbsp;</div>
+  <div>El teu nom &nbsp;</div>
   <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=30 value='nai'>
   <button id=btn_entrar>entrar</button>
   <script>
-    document.getElementById('nom_usuari').value+="_"+(Math.floor(Math.random()*1000)+1);
+    (function(){
+      //get cookie (stackoverflow)
+      function getCookie(cname){
+        var name=cname+"=";
+        var ca=document.cookie.split(';');
+        for(var i=0;i<ca.length;i++){
+          var c=ca[i];
+          while(c.charAt(0)==' '){c=c.substring(1);}
+          if(c.indexOf(name)==0){
+            return c.substring(name.length,c.length);
+          }
+        }
+        return false;
+      }
+      //comprova si usuari ja havia entrat abans per guardar el nom
+      //sinó escriu un número aleatori de l'1 al 1000
+      var nom_usuari=document.getElementById('nom_usuari');
+      var cookie_nom_usuari=getCookie('nom_usuari');
+      if(cookie_nom_usuari){nom_usuari.value=cookie_nom_usuari;}
+      else{nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);}
+    })();
   </script>
 </div>
 
@@ -54,9 +74,11 @@
   </div>
 </div><hr>
 
-<!--botó anar al tapet-->
+<!--botó veure tapet-->
 <div>
-  <button onclick="window.location='#tapet'" style="padding:2px 40px">&darr;</button>
+  <button onclick="window.location='#tapet'" id=btn_veure_tapet style="padding:2px 40px">
+    &darr;
+  </button>
 </div>
 
 <!--partida actual-->
@@ -89,14 +111,15 @@
 
   <!--info+log-->
   <div>
-    <!--infoPartida-->
-    <ul id=infoPartida>
+    <!--info partida-->
+    <ul>
       <li>Obligada/101
+      <li id=tipus_partida>Partida NO contrada
+    </ul><hr>
+    <ul>
       <li>Equip 1: <span id=punts_e1>0</span> punts
       <li>Equip 2: <span id=punts_e2>0</span> punts
-      <li>Partida NO contrada
-    </ul>
-    <!--separador--><div class=separador></div>
+    </ul><hr>
 
     <!--log--><div id=log></div>
   </div>
@@ -155,14 +178,17 @@
 </div>
 
 <!--per fer-->
-<div>
-  <b>Tasques per programar:</b>
+<hr>
+  <div style="border:1px solid #ddd">
+  <b>Llista de tasques pendents (programació):</b>
   <ol>
-    <li>Contrar/Recontrar/SantVicenç
-    <li>Cartes obligades (client)
-    <li>Poder veure última basa
-    <li>Poder canviar objectiu de punts
+    <li>Cartes obligades (no poder jugar qualsevol carta).
+    <li>Poder veure última basa.
+    <li>Poder triar punts partida (51, 101, 151).
   </ol>
+  <p style="font-size:smaller"><em>
+    Pots enviar idees/suggeriments/millores/errors &rarr; <a href="mailto:holalluis@gmail.com">holalluis@gmail.com</a>. Gràcies!
+  </em></p>
 </div>
 
 <footer style=height:500px></footer>

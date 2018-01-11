@@ -1,16 +1,17 @@
+/*DEBUG*/
+var debug=false;
+var debug=true;
+
 /* new client socket */
 var socket = io.connect('http://192.168.1.129:4000');
 
 /* Variables globals */
   var timeout_typing_event=false; //per event typing
-  var usuari=socket.id;
+  var usuari=socket.id; //nom usuari valor inicial
   var usuaris_actuals=[];
   var partida=null;
   var partides_actuals=[];
   var ma_actual=null; //array cartes [{num,pal,propietari}]
-
-  /*DEBUG*/
-  var debug=true;
 
 
 /* DOM handlers (ordenat per seccions) */
@@ -30,7 +31,8 @@ var socket = io.connect('http://192.168.1.129:4000');
   var comptador_partides=document.getElementById('comptador_partides');
   var btn_crear_partida=document.getElementById('btn_crear_partida');
   var partides=document.getElementById('partides');
-  //tapete
+  //tapet
+  var btn_veure_tapet=document.getElementById('btn_veure_tapet');
   var tapet=document.getElementById('tapet');
   var jugadorN=document.getElementById('jugadorN');
   var jugadorS=document.getElementById('jugadorS');
@@ -41,6 +43,7 @@ var socket = io.connect('http://192.168.1.129:4000');
   var status_partida=document.getElementById('status_partida');
   var triomf=document.getElementById('triomf');
   //log
+  var tipus_partida=document.getElementById('tipus_partida');
   var log=document.getElementById('log');
 
 
@@ -48,7 +51,9 @@ var socket = io.connect('http://192.168.1.129:4000');
   //fx que es crida a <body onload=init()>
   function init(){
     if(debug){
+      //entrar automàticament
       btn_entrar.dispatchEvent(new CustomEvent('click'));
+      //crear partida automàticament
       //btn_crear_partida.dispatchEvent(new CustomEvent('click'));
     }
     nom_usuari.select();
@@ -123,6 +128,9 @@ var socket = io.connect('http://192.168.1.129:4000');
 
     //emet event entrar
     socket.emit('entrar',usuari);
+
+    //guarda l'usuari al cookie "nom_usuari"
+    document.cookie="nom_usuari="+usuari;
   });
 
   //nom usuari onkeypress
@@ -157,6 +165,91 @@ var socket = io.connect('http://192.168.1.129:4000');
 
 
 /* Escolta events socket emesos pel servidor */
+socket.on('anunci-multiplicador',function(m){
+  partida.multiplicador=m;
+  switch(m){
+    case 1: tipus_partida.innerHTML="Partida NO contrada (x1)";break;
+    case 2: tipus_partida.innerHTML="Partida CONTRADA (x2)";break;
+    case 4: tipus_partida.innerHTML="Partida RECONTRADA (x4)";break;
+    case 8: tipus_partida.innerHTML="Partida SANT VICENÇ (x8)";break;
+  }
+});
+
+socket.on('esperant-santvicenç',function(){
+  //crea un menú per fer santvicenç
+  var div=document.createElement('div');
+  tapet.appendChild(div);
+  div.classList.add('menu-cantar');
+  div.innerHTML="<h5>Els rivals han recontrat. Vols fer Sant Vicenç?</h5>";
+
+  //afegir botons "Sí" i "No"
+  var btn_y=document.createElement('button');
+  var btn_n=document.createElement('button');
+  div.appendChild(btn_y);
+  div.appendChild(btn_n);
+  btn_y.innerHTML="Sí";
+  btn_n.innerHTML="No";
+
+  btn_y.addEventListener('click',function(){
+    socket.emit('santvicenç',{partida_id:partida.creador,santvicenç:true});
+    div.parentNode.removeChild(div);
+  });
+  btn_n.addEventListener('click',function(){
+    socket.emit('santvicenç',{partida_id:partida.creador,santvicenç:false});
+    div.parentNode.removeChild(div);
+  });
+});
+
+socket.on('esperant-recontro',function(){
+  //crea un menú per recontrar
+  var div_recontrar=document.createElement('div');
+  tapet.appendChild(div_recontrar);
+  div_recontrar.classList.add('menu-cantar');
+  div_recontrar.innerHTML="<h5>Els rivals han contrat. Vols recontrar?</h5>";
+
+  //afegir botons "Sí" i "No"
+  var btn_y=document.createElement('button');
+  var btn_n=document.createElement('button');
+  div_recontrar.appendChild(btn_y);
+  div_recontrar.appendChild(btn_n);
+  btn_y.innerHTML="Sí";
+  btn_n.innerHTML="No";
+
+  btn_y.addEventListener('click',function(){
+    socket.emit('recontrar',{partida_id:partida.creador,recontrar:true});
+    div_recontrar.parentNode.removeChild(div_recontrar);
+  });
+  btn_n.addEventListener('click',function(){
+    socket.emit('recontrar',{partida_id:partida.creador,recontrar:false});
+    div_recontrar.parentNode.removeChild(div_recontrar);
+  });
+});
+
+socket.on('esperant-contro',function(){
+  //crea un menú per contrar
+  var div_contrar=document.createElement('div');
+  tapet.appendChild(div_contrar);
+  div_contrar.classList.add('menu-cantar');
+  div_contrar.innerHTML="<h5>Han cantat "+partida.triomf+". Vols contrar?</h5>";
+
+  //afegir botons "Sí" i "No"
+  var btn_y=document.createElement('button');
+  var btn_n=document.createElement('button');
+  div_contrar.appendChild(btn_y);
+  div_contrar.appendChild(btn_n);
+  btn_y.innerHTML="Sí";
+  btn_n.innerHTML="No";
+
+  btn_y.addEventListener('click',function(){
+    socket.emit('contrar',{partida_id:partida.creador,contrar:true});
+    div_contrar.parentNode.removeChild(div_contrar);
+  });
+  btn_n.addEventListener('click',function(){
+    socket.emit('contrar',{partida_id:partida.creador,contrar:false});
+    div_contrar.parentNode.removeChild(div_contrar);
+  });
+});
+
 socket.on('ronda-acabada',function(punts){
   var e1=punts.equip1;
   var e2=punts.equip2;
@@ -186,13 +279,15 @@ socket.on('ronda-acabada',function(punts){
     partida.bases=[];
     partida.canta=null;
     partida.hanRecollit=0;
-    partida.multiplicador=1;
+    partida.multiplicador=null;
     partida.triomf=null;
 
     //update view
     document.getElementById('punts_e1').innerHTML=partida.equips[1].punts;
     document.getElementById('punts_e2').innerHTML=partida.equips[2].punts;
+    tipus_partida.innerHTML="Partida NO contrada";
 
+    //final partida
     return;
   }
 
@@ -249,6 +344,12 @@ socket.on('esperant-tirada',function(jugador_id){
   var nick=getUsername(jugador_id);
   if(socket.id==jugador_id){
     echo("ÉS EL TEU TORN! Fes doble-click a una carta");
+
+    //crea mini animació per cridar atenció
+    status_partida.style.transition='background 1s';
+    status_partida.style.background='yellow';
+    setTimeout(function(){status_partida.style.background='lightgreen';},1000);
+    //fi animació
   }else{
     echo("esperant "+nick);
   }
@@ -288,7 +389,6 @@ socket.on('esperant-tirada',function(jugador_id){
     //debug: tira automàticament (carta random)
     if(debug){cartes[0].dispatchEvent(new CustomEvent('dblclick'));}
   }
-
 });
 
 socket.on('delegar',function(){
@@ -320,9 +420,9 @@ socket.on('triomf-triat',function(pal){
     return;
   }
 
-  //si no és delegat, ja es pot començar
+  //pal triat
   partida.triomf=pal;
-  echo(getUsername(partida.canta)+' ha cantat: '+pal);
+  echo(getUsername(partida.canta)+' ha cantat: '+pal+'. Esperant si es contra');
 
   //seteja icona pal triat a triomf
   triomf.innerHTML="<img src='img/ico_"+pal.substring(0,2)+".jpg'>";
@@ -492,12 +592,23 @@ socket.on('refresca-partides',function(partides_arr){
       //afegeix botó començar si ja hi ha 4 persones
       if(p.jugadors==4){
         div_partida.innerHTML+=" ";
+
+        (function(){
+          //crea select triar punts (51, 101, 151)
+          /*
+          var select=" <select id=select_punts><option>51<option selected>101<option>151</select> ";
+          div_partida.innerHTML+=select;
+          */
+        })();
+
+        //crea btn començar
         var btn=document.createElement('button');
         div_partida.appendChild(btn);
         btn.innerHTML='començar';
         btn.classList.add('btn_start');//cal fer desaparèixer després de repartir
-        btn.setAttribute('onclick','socket.emit("start-partida")'); //no sé pq no funciona addEventListener
+        btn.setAttribute('onclick','socket.emit("start-partida");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
         btn.style.background='lightgreen';
+
       }
     }else if(p.jugadors<4){
       //afegeix botó unir-se
@@ -505,7 +616,7 @@ socket.on('refresca-partides',function(partides_arr){
       div_partida.appendChild(btn);
       btn.classList.add('btn_join');
       btn.innerHTML='unir-se';
-      btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'")'); //no sé pq no funciona addEventListener
+      btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
     }
 
     //llista els jugadors de la partida i posa un botó per sortir de la partida

@@ -23,13 +23,15 @@ function Partida(creador){
   };
 
   //variables de ronda
-  this.canta=null;      //socket id del jugador que canta
-  this.triomf=null;     //oros, copes, espases, bastos, botifarra, delegar
-  this.multiplicador=1; //contrar:2, recontrar:4, santvicenç:8
-  this.actiu=null;      //socket id del jugador que ha de tirar
-  this.basa=[];         //array de cartes tirades a la basa actual [{pal,num,jugador_id}]
-  this.bases=[];        //array de bases jugades
-  this.hanRecollit=0;   //nº de jugadors que han recollit la basa
+  this.canta=null;         //socket id del jugador que canta
+  this.triomf=null;        //oros, copes, espases, bastos, botifarra, delegar
+  this.recontrar=null;     //true, false
+  this.santvicenç=null;    //true, false
+  this.multiplicador=null; //contrar:2, recontrar:4, santvicenç:8
+  this.actiu=null;         //socket id del jugador que ha de tirar
+  this.basa=[];            //array de cartes tirades a la basa actual [{pal,num,jugador_id}]
+  this.bases=[];           //array de bases jugades
+  this.hanRecollit=0;      //nº de jugadors que han recollit la basa
 };
 
 module.exports = Partida;
@@ -40,7 +42,9 @@ Partida.prototype.reset=function(){
   this.equips[2].punts=0;
   this.canta=null;
   this.triomf=null;
-  this.multiplicador=1;
+  this.multiplicador=null;
+  this.recontrat=null;
+  this.sanvicentat=null;
   this.actiu=null;
   this.basa=[];
   this.bases=[];
@@ -392,7 +396,7 @@ Partida.prototype.comptaPunts=function(bases){
 
   //botifarra val per 2
   if(this.triomf=="botifarra"){
-    console.log("botifarra: punts x 2");
+    console.log("triomf=botifarra: punts x 2");
     punts_e1*=2;
     punts_e2*=2;
   }
