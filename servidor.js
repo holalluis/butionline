@@ -7,8 +7,7 @@ var Partida=require('./partida.js'); //(local) classe Partida
 //express setup
 var app=express();
 var server=app.listen(4000,function(){
-  console.log("escoltant peticions al port 4000");
-});
+  console.log("escoltant peticions al port 4000");});
 
 //static files
 app.use(express.static('public'));
@@ -26,7 +25,7 @@ var partides=[];
 //SERVER SOCKET: ESCOLTA CLIENT EVENTS
 io.on('connection',function(sock){
   var ip=sock.conn.remoteAddress.split(':')[3]; //exemple "::ffff:192.168.1.131"
-  console.log('nou usuari anònim ('+sock.id+', '+ip+')');
+  utils.log('nou usuari anònim ('+sock.id+', '+ip+')');
 
   //envia llista usuaris i partides actuals
   sock.emit('refresca-usuaris',usuaris);
@@ -36,10 +35,11 @@ io.on('connection',function(sock){
 
   //jugador anuncia ha recollit basa
   sock.on('basa-recollida',function(partida_id){
-    console.log('basa recollida ('+partida_id+')');
+    utils.log('basa recollida (P '+partida_id+')');
 
     //get partida
     var p=utils.getPartida(partides,partida_id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
     //augmenta comptador jugadors que han recollit
     p.hanRecollit++;
@@ -54,7 +54,7 @@ io.on('connection',function(sock){
     if(p.bases.length==12){
       //compta els punts
       var punts=p.comptaPunts(p.bases);
-      console.log(punts);
+      utils.log(punts);
 
       //update punts
       p.equips[1].punts+=punts.equip1;
@@ -73,7 +73,7 @@ io.on('connection',function(sock){
       if(p.equips[1].punts>=p.objectiu || p.equips[2].punts>=p.objectiu){
         var p1=p.equips[1].punts;
         var p2=p.equips[2].punts;
-        console.log('partida acabada ('+p1+' a '+p2+')');
+        utils.log('partida acabada ('+p1+' a '+p2+')');
 
         //reseteja partida per poder tornar a començar
         p.reset();
@@ -90,7 +90,7 @@ io.on('connection',function(sock){
 
     //DETERMINA QUI GUANYA PER PASSAR A LA SEGÜENT BASA
     var guanyador=p.getGuanyador(p.basa); //sock id guanyador
-    console.log('guanyador:',guanyador);
+    utils.log('guanyador:',guanyador);
 
     //anuncia a cada jugador següent tirada
     p.actiu=guanyador;
@@ -109,9 +109,10 @@ io.on('connection',function(sock){
 
   //jugador intenta una tirada
   sock.on('tirada',function(data){
-    console.log('carta jugada',data.partida_id,sock.id);
+    utils.log('carta jugada',data.partida_id,sock.id);
 
     var p=utils.getPartida(partides,data.partida_id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
     var pal=data.pal;
     var num=data.num;
 
@@ -125,7 +126,7 @@ io.on('connection',function(sock){
 
     //tirada no acceptada
     if(esLegal==false){
-      console.log('jugada ilegal ('+sock.id+')');
+      utils.log('jugada ilegal ('+sock.id+')');
       return;
     }
 
@@ -169,10 +170,11 @@ io.on('connection',function(sock){
 
   //creador starts partida
   sock.on('start-partida',function(){
-    console.log('creador vol iniciar partida ('+sock.id+')');
+    utils.log('creador vol iniciar partida ('+sock.id+')');
     /*INICI PARTIDA*/
     //get partida
     var p=utils.getPartida(partides,sock.id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
     //anuncia als jugadors que la partida comença
     p.getJugadors().forEach(sock_id=>{
       if(sock_id==sock.id){
@@ -185,10 +187,11 @@ io.on('connection',function(sock){
 
   //creador starts ronda
   sock.on('start-ronda',function(){
-    console.log('creador vol iniciar ronda ('+sock.id+')');
+    utils.log('creador vol iniciar ronda ('+sock.id+')');
 
     //get partida
     var p=utils.getPartida(partides,sock.id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
     p.triomf=null;
     p.recontrar=null;
@@ -200,7 +203,7 @@ io.on('connection',function(sock){
     p.hanRecollit=0;
 
     /*RONDA*/
-    console.log("repartint cartes ("+sock.id+")")
+    utils.log("repartint cartes ("+sock.id+")")
 
     //1. repartir cartes (=assignar propietari)
     var jugadors=p.getJugadors(); //[N,S,E,O]
@@ -218,7 +221,7 @@ io.on('connection',function(sock){
 
     //2. determina qui canta i emet sock_id
     var canta=p.quiCanta();
-    console.log("canta",canta);
+    utils.log("canta",canta);
     jugadors.forEach(sock_id=>{
       if(sock_id==sock.id){
         sock.emit('anuncia-qui-canta',canta);
@@ -234,7 +237,9 @@ io.on('connection',function(sock){
     var pal=data.pal;
     //get partida
     var p=utils.getPartida(partides,creador);
-    console.log("pal triat: "+pal+" ("+creador+")");
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+
+    utils.log("pal triat: "+pal+" ("+creador+")");
     //seteja pal triat a la partida
     p.triomf=pal;
     //anuncia als jugadors el pal triat
@@ -253,7 +258,7 @@ io.on('connection',function(sock){
     //si es delega emet 'delegar' al company
     if(pal=="delegar"){
       var company=p.getCompany(p.canta);
-      console.log("delegat a "+company);
+      utils.log("delegat a "+company);
       sock.broadcast.to(company).emit('delegar');
     }else{
       //CONTRAR/RECONTRAR/SANTVICENÇ
@@ -267,8 +272,11 @@ io.on('connection',function(sock){
 
   //remote user vol contrar
   sock.on('contrar',function(data){
-    console.log('jugador vol contrar?',data.contrar);
+    utils.log('jugador vol contrar?',data.contrar);
+
+    //get partida
     var p=utils.getPartida(partides,data.partida_id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
     //get rivals
     var rival1=p.getNextJugador(sock.id);
@@ -276,9 +284,9 @@ io.on('connection',function(sock){
 
     //processa resposta
     if(p.multiplicador==1){
-      console.log('company no vol contrar');
+      utils.log('company no vol contrar');
       if(data.contrar){
-        console.log('usuari vol contrar');
+        utils.log('usuari vol contrar');
         p.multiplicador=2;
         //emet recontrar als rivals
         sock.broadcast.to(rival1).emit('esperant-recontro');
@@ -298,12 +306,12 @@ io.on('connection',function(sock){
         });
       }
     }else if(p.multiplicador==2){
-      console.log('company vol contrar');
+      utils.log('company vol contrar');
       //emet recontrar als rivals
       sock.broadcast.to(rival1).emit('esperant-recontro');
       sock.broadcast.to(rival2).emit('esperant-recontro');
     }else if(p.multiplicador==null){
-      console.log('resposta contrar rebuda. Company encara no ha respost');
+      utils.log('resposta contrar rebuda. Esperant company');
       p.multiplicador = data.contrar ? 2 : 1;
       return;
     }
@@ -311,8 +319,11 @@ io.on('connection',function(sock){
 
   //remote user vol recontrar
   sock.on('recontrar',function(data){
-    console.log('jugador vol recontrar?',data.recontrar);
+    utils.log('respota jugador recontrar (P '+data.partida_id+')');
+
+    //get partida
     var p=utils.getPartida(partides,data.partida_id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
     //get rivals
     var rival1=p.getNextJugador(sock.id);
@@ -320,9 +331,9 @@ io.on('connection',function(sock){
 
     //processa resposta
     if(p.recontrar==false){
-      console.log('company no vol recontrar');
+      utils.log('company no vol recontrar');
       if(data.recontrar){
-        console.log('usuari vol recontrar');
+        utils.log('usuari vol recontrar');
         p.multiplicador=4;
         //emet santvicenç als rivals
         sock.broadcast.to(rival1).emit('esperant-santvicenç');
@@ -342,13 +353,13 @@ io.on('connection',function(sock){
         });
       }
     }else if(p.recontrar==true){
-      console.log('company vol recontrar');
+      utils.log('company vol recontrar');
       p.multiplicador=4;
       //emet santvicenç als rivals
       sock.broadcast.to(rival1).emit('esperant-santvicenç');
       sock.broadcast.to(rival2).emit('esperant-santvicenç');
     }else if(p.recontrar==null){
-      console.log('resposta recontrar rebuda. Company encara no ha respost');
+      utils.log('resposta recontrar rebuda. Esperant company');
       p.recontrar = data.recontrar;
       return;
     }
@@ -356,18 +367,20 @@ io.on('connection',function(sock){
 
   //remote user vol fer santvicenç
   sock.on('santvicenç',function(data){
-    console.log('jugador vol santvicenç?',data.santvicenç);
+    utils.log('respota jugador santvicenç');
+
     var p=utils.getPartida(partides,data.partida_id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
     //processa resposta
     if(p.santvicenç==false){
-      console.log('company no vol santvicenç');
+      utils.log('company no vol santvicenç');
       if(data.santvicenç){
-        console.log('usuari vol santvicenç');
+        utils.log('usuari vol santvicenç');
         p.santvicenç=true;
       }
     }else if(p.santvicenç==null){
-      console.log('resposta santvicenç rebuda. Company encara no ha respost');
+      utils.log('resposta santvicenç rebuda. Esperant company');
       p.santvicenç = data.santvicenç;
       return;
     }
@@ -392,7 +405,7 @@ io.on('connection',function(sock){
 
   //remote user crea partida
   sock.on('crear-partida',function(){
-    console.log('usuari vol crear partida ('+sock.id+')');
+    utils.log('usuari vol crear partida ('+sock.id+')');
 
     //comprova si l'usuari té permís per crear la partida
     //comprova si ja ha creat una partida
@@ -403,14 +416,14 @@ io.on('connection',function(sock){
 
     //no continuïs si no hi ha permís
     if(permis==false){
-      console.log('usuari no té permís per crear partida ('+sock.id+')');
+      utils.log('usuari no té permís per crear partida ('+sock.id+')');
       return;
     }
 
     //nova partida
     var p=new Partida(sock.id);
     partides.push(p);
-    console.log('partida creada ('+sock.id+')');
+    utils.log('partida creada ('+sock.id+')');
 
     //emet la nova llista de partides
     io.sockets.emit('refresca-partides',partides);
@@ -418,55 +431,57 @@ io.on('connection',function(sock){
 
   //remote user esborra partida
   sock.on('esborrar-partida',function(){
-    console.log('usuari vol esborrar partida ('+sock.id+')');
+    utils.log('usuari vol esborrar partida ('+sock.id+')');
     //esborra partides que tenen creador == sock.id
     partides=partides.filter(p=>{return p.creador!=sock.id});
     //emet la nova llista de partides
     io.sockets.emit('refresca-partides',partides);
-    console.log('partida esborrada ('+sock.id+')');
+    utils.log('partida esborrada ('+sock.id+')');
   });
 
   //remote user joins partida "sock_id"
   sock.on('join-partida',function(sock_id){
-    console.log('('+sock.id+') vol unir-se a ('+sock_id+')');
+    utils.log('(J '+sock.id+') vol unir-se a (P '+sock_id+')');
 
     //si usuari no té username no l'afegeixis
     if(!utils.getUsername(usuaris,sock.id)){
-      console.log("Usuari no té nom ("+sock.id+")");
+      utils.log("usuari fora del xat (J "+sock.id+")");
       return false;
     }
 
-    //si usuari ja forma part no afegeixis
+    //si usuari ja forma part d'una partida no afegeixis
     for(var i=0;i<partides.length;i++){
       if(partides[i].isPart(sock.id)){
+        utils.log("usuari ja és dins una partida (J "+sock.id+")");
         return false;
       }
     }
 
     //obtenir partida des de "partides"
     var p=utils.getPartida(partides,sock_id);
-    if(p){
-      p.afegirJugador(sock.id);
-      io.sockets.emit('refresca-partides',partides);
-    }
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+
+    //afegir jugador i emet canvis
+    p.afegirJugador(sock.id);
+    io.sockets.emit('refresca-partides',partides);
   });
 
   //remote user exits partida
   sock.on('exit-partida',function(sock_id){
-    console.log('usuari ('+sock.id+') vol sortir de ('+sock_id+')');
+    utils.log('usuari ('+sock.id+') vol sortir de ('+sock_id+')');
 
     //obtenir partida des de "partides"
     var p=utils.getPartida(partides,sock_id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
-    if(p){
-      p.esborraJugador(sock.id);
-      io.sockets.emit('refresca-partides',partides);
-    }
+    //esborra jugador i emet canvis
+    p.esborraJugador(sock.id);
+    io.sockets.emit('refresca-partides',partides);
   });
 
   //remote user disconnected
   sock.on('disconnect',function(){
-    console.log('usuari desconnectat ('+sock.id+')');
+    utils.log('usuari desconnectat ('+sock.id+')');
 
     //emet event sortir a tothom
     var nick=utils.getUsername(usuaris,sock.id);
@@ -489,7 +504,7 @@ io.on('connection',function(sock){
 
   //remote user entra al xat
   sock.on('entrar',function(nom_usuari){
-    console.log('"'+nom_usuari+'" nou nick ('+sock.id+')');
+    utils.log('"'+nom_usuari+'" nou nick ('+sock.id+')');
 
     //si l'usuari ja estava connectat canvia-li el nom
     var usuaris_filtrats=usuaris.filter(u=>{return u.id==sock.id});
@@ -519,14 +534,14 @@ io.on('connection',function(sock){
 
   //remote user està escrivint missatge
   sock.on('typing',function(nick){
-    //debug:console.log(nick+" is typing");
+    //debug:utils.log(nick+" is typing");
     //broadcast: emet a tothom menys a l'autor
     sock.broadcast.emit('typing',nick);
   });
 
   //remote user envia missatge
   sock.on('xat',function(missatge){
-    console.log("missatge '"+missatge+"' al xat ("+sock.id+")");
+    utils.log("missatge '"+missatge+"' al xat ("+sock.id+")");
 
     //busca nick autor missatge
     var nick=utils.getUsername(usuaris,sock.id);

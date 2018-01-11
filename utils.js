@@ -27,9 +27,16 @@ function getPartida(partides,sock_id)
   return false;
 }
 
+//4. console.log amb data
+function log(msg){
+  var d='['+novaData()+']';
+  console.log(d,msg);
+}
+
 //export
 module.exports={
   getUsername,
   novaData,
   getPartida,
+  log,
 }
