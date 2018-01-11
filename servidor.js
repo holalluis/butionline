@@ -462,6 +462,7 @@ io.on('connection',function(sock){
     if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
     //afegir jugador i emet canvis
+    utils.log('(J '+sock.id+') afegit a (P '+sock_id+')');
     p.afegirJugador(sock.id);
     io.sockets.emit('refresca-partides',partides);
   });
@@ -541,7 +542,7 @@ io.on('connection',function(sock){
 
   //remote user envia missatge
   sock.on('xat',function(missatge){
-    utils.log("missatge '"+missatge+"' al xat ("+sock.id+")");
+    utils.log("XAT '"+missatge+"' ("+sock.id+")");
 
     //busca nick autor missatge
     var nick=utils.getUsername(usuaris,sock.id);

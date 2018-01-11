@@ -564,6 +564,11 @@ socket.on('refresca-partides',function(partides_arr){
   comptador_partides.innerHTML=partides_arr.length;
   partides_actuals=partides_arr;
   partides.innerHTML="";
+
+  if(partides_arr.length==0){
+    partides.innerHTML="<small><i>~no hi ha partides</i></small>";
+  }
+
   partides_arr.forEach((p,i)=>{
     //crea div partida
     var div_partida=document.createElement('div');

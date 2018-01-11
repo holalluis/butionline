@@ -128,9 +128,9 @@ Partida.prototype.quiCanta=function(){
   }
   //si canta val null canta random
   var jug=[
-    this.equips[1].jugadorN, 
+    this.equips[1].jugadorN,
     this.equips[1].jugadorS,
-    this.equips[2].jugadorE, 
+    this.equips[2].jugadorE,
     this.equips[2].jugadorO,
   ];
   if(jug[0]&&jug[1]&&jug[2]&&jug[3]){

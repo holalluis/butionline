@@ -22,7 +22,14 @@
 
   hr{
     margin-bottom:1px;
+    border:none;
+    border-bottom:1px solid #ccc;
   }
+
+  body > hr, #main > hr {
+    margin-left:-8px;
+  }
+
 
 /*classes*/
   .flex{
