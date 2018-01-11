@@ -18,10 +18,10 @@
   color:#333;
   width:100px; height:150px;
 }
-#tapet #jugadorN { top:10px; left:120px; }
-#tapet #jugadorS { top:170px;left:120px; }
-#tapet #jugadorE { top:90px; left:230px; }
-#tapet #jugadorO { top:90px; left:10px; }
+#tapet #jugadorN { top:5px; left:115px; }
+#tapet #jugadorS { top:165px;left:115px; }
+#tapet #jugadorE { top:85px; left:225px; }
+#tapet #jugadorO { top:85px; left:5px; }
 
 /*jugador que ha de tirar*/
 #tapet div.jugador.actiu {
