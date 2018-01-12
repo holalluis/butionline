@@ -1,5 +1,4 @@
 # botifarra online
-
 Joc de la botifarra online inspirat en el butinet.
 
 La motivació principal per crear aquesta versió alternativa és que volia
@@ -16,7 +15,7 @@ euros/any).
 
 La intenció és programar una botifarra sense cap tipus de restricció.
 
-Com que no tinc cap ànim de lucre amb aquest projecte, i és per ús propi, no
+Com que no tinc cap intenció de lucre amb aquest projecte i és per ús propi, no
 ofereixo cap garantia que el servidor funcioni bé les 24 hores del dia.
 
 ## objectiu monetització: no
