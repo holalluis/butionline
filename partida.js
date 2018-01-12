@@ -341,8 +341,6 @@ Partida.prototype.getEquip=function(jugador_id){
 
 //compta punts ronda
 Partida.prototype.comptaPunts=function(bases){
-  console.log("multiplicador:",this.multiplicador);
-
   //separar les bases en 2 pilons
   var bases_equip1=[];
   var bases_equip2=[];
@@ -394,7 +392,6 @@ Partida.prototype.comptaPunts=function(bases){
 
   //botifarra val per 2
   if(this.triomf=="botifarra"){
-    console.log("triomf=botifarra: punts x 2");
     punts_e1*=2;
     punts_e2*=2;
   }

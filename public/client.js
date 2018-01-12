@@ -3,7 +3,7 @@ var debug=false;
 var debug=true;
 
 /* new client socket (  ovh:  164.132.111.240) */
-var socket=io.connect('http://192.168.001.130:4000');
+var socket=io.connect('http://127.000.000.001:4000');
 
 /* Variables globals */
   var timeout_typing_event=false; //per event typing
@@ -96,6 +96,7 @@ var socket=io.connect('http://192.168.001.130:4000');
   btn_entrar.addEventListener('click',function(){
     //no facis res si nom està buit
     if(nom_usuari.value=="")return;
+
     //comprova si nom usuari ja existeix
     (function(){
       usuari=nom_usuari.value;
@@ -326,6 +327,9 @@ socket.on('recollir-basa',function(){
   //treu ressaltat jugador actiu
   var actiu=document.querySelector('div.jugador.actiu');
   if(actiu){actiu.classList.remove('actiu');}
+
+  //buida la basa
+  partida.basa=[];
 });
 
 socket.on('tirada-legal',function(data){
@@ -337,12 +341,21 @@ socket.on('tirada-legal',function(data){
   var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
   carta.innerHTML+="<img src='/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg'>";
 
-  //fes desapareixer carta de la ma
+  //afegeix carta a basa
+  partida.basa.push({pal,num});
+
+  //desapareix carta de la ma
   if(id==socket.id){
     var carta=document.querySelector('#ma img.carta[pal='+pal+'][num="'+num+'"]');
     carta.parentNode.removeChild(carta);
+
     //deixa de ser jugador actiu
     partida.actiu=null;
+
+    //treu carta de la ma actual
+    ma_actual=ma_actual.filter(c=>{
+      return c.pal!=pal || c.num!=num;
+    });
   }
 });
 
@@ -384,10 +397,106 @@ socket.on('esperant-tirada',function(jugador_id){
   }
   partida.actiu=temp_id;
 
-  //TODO programar normes tirar obligat
-  //posa listeners a les cartes del jugador actiu
+  //posa listeners a les cartes permeses del jugador actiu
   if(socket.id==partida.actiu){
+
+    //normes obligat tirar TODO
+    /*
+    (function(){
+        necessari:
+          pal inicial
+          cal matar
+          partida.triomf
+          ma_actual
+
+      //cal matar basa actual (boolean)
+      var cal_matar=(function(){
+        //determina qui guanya de 2 cartes ja jugades en ordre d'una basa (1,2) ò (2,3)
+        function qui_guanya(c0,c1){
+          //mateix pal
+          if(c0.pal==c1.pal){
+            if(c0.num>c1.num){return 0;}
+            else{             return 1;}
+          }else{
+            if     (c0.pal==triomf){return 0;}
+            else if(c1.pal==triomf){return 1;}
+            else{
+              if     (c0.pal==pal_inicial){return 0;}
+              else if(c1.pal==pal_inicial){return 1;}
+              else{
+                //només cas cartes 2 i 3: significa que guanya el company (el que ha sortit)
+                return -1;
+              }
+            }
+          }
+        }
+
+        if(basa.length==1){return true;}  //segona carta sempre ha de matar la primera
+        else if(basa.length==2){          //tercera carta no sempre cal matar
+          if(qui_guanya(basa[0],basa[1])==0){return false;} //guanya el company, no cal matar
+          else{                              return true; } //guanya el rival, cal matar
+        }else if(basa.length==3){         //quarta carta no sempre cal matar
+          if(
+            qui_guanya(basa[0],basa[1])==1 &&
+            qui_guanya(basa[1],basa[2])==0
+          ){return false;} //guanya el company: no cal matar
+          else{return true;}
+        }
+      })();
+      console.log('cal matar '+cal_matar);
+
+      //determina si seria legal tirar una carta
+      function es_legal(carta){
+        return true;//debug
+        var triomf=partida.triomf.substring(0,2);
+        var basa=partida.basa;
+
+        //casos extrems que no cal mirar la carta
+        if(ma_actual.length==1 || basa.length==0){return true;}
+
+        //tradueix manilla i as per poder comparar números
+        if(carta.num==1) carta.num=13;
+        if(carta.num==9) carta.num=14;
+
+        //agafa el pal inicial
+        var pal_inicial=basa[0].pal;
+
+        if(carta.pal==pal_inicial){
+        }
+
+        //determina si falles del pal inicial (true false)
+        var falles = ma_actual.filter(c=>{return c.pal==pal_inicial}).length == 0;
+        console.log('falles '+falles);
+
+
+        //ARBRE DE DECISIÓ
+
+        //tens carta del pal inicial
+        if(!falles){
+        }
+      }
+    })();
+    */
+
+    function es_legal(carta){
+      return true;
+    }
+
+    //recorre totes les cartes de la ma
     for(var i=0;i<cartes.length;i++){
+      var pal=cartes[i].getAttribute('pal');
+      var num=parseInt(cartes[i].getAttribute('num'));
+
+      //treu borde a totes les cartes
+      cartes[i].style.border="none";
+
+      //comprova si seria legal jugar la carta
+      if(!es_legal({num,pal})){continue;}
+
+      //posa borde a les permeses
+      cartes[i].style.borderBottom="3px solid orange";
+
+      //posa click listener per jugar la carta
       cartes[i].addEventListener('click',function listener(){
         this.removeEventListener('click',listener);
         //impedeix jugar al jugador no actiu
@@ -395,7 +504,7 @@ socket.on('esperant-tirada',function(jugador_id){
         //emet tirada
         var pal=this.getAttribute('pal');
         var num=parseInt(this.getAttribute('num'));
-        socket.emit('tirada',{partida_id:partida.creador, pal, num});
+        socket.emit('tirada',{partida_id:partida.creador,pal,num});
       });
     }
 
@@ -482,7 +591,7 @@ socket.on('repartir',function(cartes){
   ma.innerHTML="";
   ma_actual=cartes;
 
-  //ordena mà rebuda per pal (or,co,es,ba)
+  //ordena ma rebuda per pal (or,co,es,ba)
   ['or','co','es','ba'].forEach(pal=>{
     cartes
       .filter(c=>{return c.pal==pal})

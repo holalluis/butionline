@@ -39,7 +39,7 @@ io.on('connection',function(sock){
 
     //get partida
     var p=utils.getPartida(partides,partida_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //augmenta comptador jugadors que han recollit
     p.hanRecollit++;
@@ -90,7 +90,7 @@ io.on('connection',function(sock){
 
     //DETERMINA QUI GUANYA PER PASSAR A LA SEGÜENT BASA
     var guanyador=p.getGuanyador(p.basa); //sock id guanyador
-    utils.log('guanyador:',guanyador);
+    utils.log('guanyador: '+guanyador);
 
     //anuncia a cada jugador següent tirada
     p.actiu=guanyador;
@@ -109,10 +109,10 @@ io.on('connection',function(sock){
 
   //jugador intenta una tirada
   sock.on('tirada',function(data){
-    utils.log('carta jugada',data.partida_id,sock.id);
+    utils.log('carta jugada (P '+data.partida_id+") (J "+sock.id+")");
 
     var p=utils.getPartida(partides,data.partida_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
     var pal=data.pal;
     var num=data.num;
 
@@ -163,7 +163,7 @@ io.on('connection',function(sock){
     /*INICI PARTIDA*/
     //get partida
     var p=utils.getPartida(partides,sock.id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //marca que la partida està en marxa
     p.en_marxa=true;
@@ -184,7 +184,7 @@ io.on('connection',function(sock){
 
     //get partida
     var p=utils.getPartida(partides,sock.id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     p.triomf=null;
     p.recontrar=null;
@@ -214,7 +214,7 @@ io.on('connection',function(sock){
 
     //2. determina qui canta i emet sock_id
     var canta=p.quiCanta();
-    utils.log("canta",canta);
+    utils.log("canta "+canta);
     jugadors.forEach(sock_id=>{
       if(sock_id==sock.id){
         sock.emit('anuncia-qui-canta',canta);
@@ -230,7 +230,7 @@ io.on('connection',function(sock){
     var pal=data.pal;
     //get partida
     var p=utils.getPartida(partides,creador);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     utils.log("pal triat: "+pal+" ("+creador+")");
     //seteja pal triat a la partida
@@ -265,11 +265,11 @@ io.on('connection',function(sock){
 
   //remote user vol contrar
   sock.on('contrar',function(data){
-    utils.log('jugador vol contrar?',data.contrar);
+    utils.log('rebuda resposta contrar '+data.contrar);
 
     //get partida
     var p=utils.getPartida(partides,data.partida_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //get rivals
     var rival1=p.getNextJugador(sock.id);
@@ -316,7 +316,7 @@ io.on('connection',function(sock){
 
     //get partida
     var p=utils.getPartida(partides,data.partida_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //get rivals
     var rival1=p.getNextJugador(sock.id);
@@ -364,7 +364,7 @@ io.on('connection',function(sock){
 
     //get partida
     var p=utils.getPartida(partides,data.partida_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //processa resposta
     if(p.santvicenç==false){
@@ -429,7 +429,7 @@ io.on('connection',function(sock){
 
     //get partida
     var p=utils.getPartida(partides,sock.id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //emet event "partida-abandonada"
     p.getJugadors().forEach(j_id=>{
@@ -468,7 +468,7 @@ io.on('connection',function(sock){
 
     //obtenir partida des de "partides"
     var p=utils.getPartida(partides,sock_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //afegir jugador i emet canvis
     utils.log('(J '+sock.id+') afegit a (P '+sock_id+')');
@@ -482,7 +482,7 @@ io.on('connection',function(sock){
 
     //obtenir partida des de "partides"
     var p=utils.getPartida(partides,sock_id);
-    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //emet 'partida-abandonada'
     p.getJugadors().forEach(jugador_id=>{
