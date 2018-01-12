@@ -10,7 +10,6 @@
 
 <!--entrar a la sala-->
 <div class=flex>
-  <div>El teu nom &nbsp;</div>
   <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=30 value='nai'>
   <button id=btn_entrar>entrar</button>
   <script>
@@ -32,8 +31,10 @@
       //sinó escriu un número aleatori de l'1 al 1000
       var nom_usuari=document.getElementById('nom_usuari');
       var cookie_nom_usuari=getCookie('nom_usuari');
-      if(cookie_nom_usuari){nom_usuari.value=cookie_nom_usuari;}
-      else{nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);}
+      if(cookie_nom_usuari){
+        nom_usuari.value=cookie_nom_usuari;
+      }else{
+        nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);}
     })();
   </script>
 </div>
@@ -182,7 +183,7 @@
 
 <!--per fer-->
 <hr>
-  <div style="border:1px solid #ddd">
+<div style="border:1px solid #ddd;margin-top:10px">
   <h5>App en període de proves!!</h5>
   <b>Llista de tasques pendents (programació):</b>
   <ol>
