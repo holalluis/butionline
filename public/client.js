@@ -579,7 +579,6 @@ socket.on('refresca-partides',function(partides_arr){
 
     //afegeix botó esborrar partida si ets creador
     if(p.creador==socket.id){
-
       //amaga els botons "join" i "create"
       (function(){
         var btns=document.querySelectorAll('button.btn_join');
@@ -659,6 +658,7 @@ socket.on('refresca-partides',function(partides_arr){
         }
       });
     })();
+    partides.innerHTML+="<hr>";
   });
 });
 

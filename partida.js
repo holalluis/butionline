@@ -4,9 +4,10 @@
  */
 function Partida(creador){
   //propietats globals
-  this.creador=creador; // socket.id usuari
-  this.objectiu=101;    // 51 | 101 | 151 punts
-  this.jugadors=1;      // 0-4
+  this.creador=creador; //socket.id usuari
+  this.objectiu=101;    //51 | 101 | 151 punts
+  this.jugadors=1;      //0-4
+  this.en_marxa=false;  //partida en marxa
 
   //equips: jugadors N+S vs jugadors E+O
   this.equips={
@@ -34,7 +35,8 @@ function Partida(creador){
   this.hanRecollit=0;      //nº de jugadors que han recollit la basa
 };
 
-module.exports = Partida;
+//export (require)
+module.exports=Partida;
 
 //reset variables per poder recomençar partida
 Partida.prototype.reset=function(){
@@ -248,7 +250,7 @@ Partida.prototype.getCompany=function(jugador_id){
   else if(jugador_id==this.equips[1].jugadorS) return this.equips[1].jugadorN;
   else if(jugador_id==this.equips[2].jugadorE) return this.equips[2].jugadorO;
   else if(jugador_id==this.equips[2].jugadorO) return this.equips[2].jugadorE;
-  else 
+  else
     return false;
 };
 
@@ -257,7 +259,7 @@ Partida.prototype.getNextJugador=function(jugador_id){
   else if(jugador_id==this.equips[1].jugadorS) return this.equips[2].jugadorE;
   else if(jugador_id==this.equips[2].jugadorE) return this.equips[1].jugadorN;
   else if(jugador_id==this.equips[2].jugadorO) return this.equips[1].jugadorS;
-  else 
+  else
     return false;
 };
 
