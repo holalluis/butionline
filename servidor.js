@@ -118,19 +118,8 @@ io.on('connection',function(sock){
 
     var tirada={jugador_id:sock.id,pal,num};
 
-    //comprova si la tirada és legal
-    var esLegal=(function(){
-      return true;
-      //continuar TODO
-    })();
-
-    //tirada no acceptada
-    if(esLegal==false){
-      utils.log('jugada ilegal ('+sock.id+')');
-      return;
-    }
-
-    //anuncia que la jugada és legal
+    //anuncia la jugada
+    //nota: la legalitat es comprova al client no al servidor
     p.getJugadors().forEach(sock_id=>{
       if(sock_id==sock.id){
         sock.emit('tirada-legal',tirada);
@@ -175,6 +164,10 @@ io.on('connection',function(sock){
     //get partida
     var p=utils.getPartida(partides,sock.id);
     if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+
+    //marca que la partida està en marxa
+    p.en_marxa=true;
+
     //anuncia als jugadors que la partida comença
     p.getJugadors().forEach(sock_id=>{
       if(sock_id==sock.id){
@@ -369,6 +362,7 @@ io.on('connection',function(sock){
   sock.on('santvicenç',function(data){
     utils.log('respota jugador santvicenç');
 
+    //get partida
     var p=utils.getPartida(partides,data.partida_id);
     if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
@@ -431,9 +425,24 @@ io.on('connection',function(sock){
 
   //remote user esborra partida
   sock.on('esborrar-partida',function(){
-    utils.log('usuari vol esborrar partida ('+sock.id+')');
-    //esborra partides que tenen creador == sock.id
+    utils.log('creador vol esborrar partida ('+sock.id+')');
+
+    //get partida
+    var p=utils.getPartida(partides,sock.id);
+    if(!p){utils.log("partida",partida_id,"desconnectada");return;}
+
+    //emet event "partida-abandonada"
+    p.getJugadors().forEach(j_id=>{
+      if(j_id==sock.id){
+        sock.emit('partida-abandonada');
+      }else{
+        sock.broadcast.to(j_id).emit('partida-abandonada');
+      }
+    });
+
+    //esborra partides on p.creador == sock.id
     partides=partides.filter(p=>{return p.creador!=sock.id});
+
     //emet la nova llista de partides
     io.sockets.emit('refresca-partides',partides);
     utils.log('partida esborrada ('+sock.id+')');
@@ -475,8 +484,19 @@ io.on('connection',function(sock){
     var p=utils.getPartida(partides,sock_id);
     if(!p){utils.log("partida",partida_id,"desconnectada");return;}
 
+    //emet 'partida-abandonada'
+    p.getJugadors().forEach(jugador_id=>{
+      if(jugador_id==sock.id){
+        sock.emit('partida-abandonada');
+      }else{
+        sock.broadcast.to(jugador_id).emit('partida-abandonada');
+      }
+    });
+
     //esborra jugador i emet canvis
     p.esborraJugador(sock.id);
+    p.en_marxa=false;
+
     io.sockets.emit('refresca-partides',partides);
   });
 
@@ -494,12 +514,23 @@ io.on('connection',function(sock){
     usuaris=usuaris.filter(u=>{return u.id!=sock.id});
     io.sockets.emit('refresca-usuaris',usuaris);
 
-    //elimina partides on es el creador i deixa espai a les que s'ha unit
-    //i emet la nova llista
-    partides=partides.filter(p=>{return p.creador!=sock.id});
+    //si forma part de partida avisa jugadors partida abandonada
     partides.forEach(p=>{
-      p.esborraJugador(sock.id);
+      if(p.isPart(sock.id)){
+        p.getJugadors().forEach(sock_id=>{
+          //emet event 'partida-abandonada' als altres jugadors
+          sock.broadcast.to(sock_id).emit('partida-abandonada');
+        });
+      }
     });
+
+    //elimina partides on es el creador 
+    partides=partides.filter(p=>{return p.creador!=sock.id});
+
+    //deixa espai a les partides que s'havia unit
+    partides.forEach(p=>{p.esborraJugador(sock.id);});
+
+    //emet la nova llista de partides
     io.sockets.emit('refresca-partides',partides);
   });
 

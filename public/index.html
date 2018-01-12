@@ -3,10 +3,11 @@
   <title>Botifarra</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
   <link href="css.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <!--client socket-->
+  <script src="libs/socket.io/2.0.4/socket.io.js"></script>
 </head><body onload="init()">
 
-<h3 style="margin:6px 0">Botifarra online (v0.1)</h3>
+<h3 style="margin:6px 0">Botifarra online <code>(v0.1)</code></h3>
 
 <!--entrar a la sala-->
 <div class=flex>
@@ -57,7 +58,7 @@
   <div>
     <p>Xat general <em id=feedback></em></p>
     <div id=xat></div>
-    <div id=xat_controls style="visibility:hidden" class=flex>
+    <div id=xat_controls class=flex>
       <input id=missatge placeholder="Escriu un missatge" maxlength=140 value="">
       <button id=btn_missatge>enviar</button>
     </div>
@@ -77,13 +78,12 @@
 
 <hr>
 
-<!--botó veure tapet
+<!--botó veure tapet-->
 <div>
-  <button onclick="window.location='#tapet'" id=btn_veure_tapet style="padding:10px 15px;margin:5px 0">
+  <button onclick="window.location='#tapet'" id=btn_veure_tapet style="display:none;padding:10px 15px;margin:5px 0">
     &darr;
   </button>
 </div>
--->
 
 <!--partida actual-->
 <div class=flex>
@@ -179,31 +179,32 @@
   <img src="/img/cartes/ba10.jpg"></img>
   <img src="/img/cartes/ba11.jpg"></img>
   <img src="/img/cartes/ba12.jpg"></img>
-</div>
+</div><hr>
 
 <!--per fer-->
-<hr>
-<div style="border:1px solid #ddd;margin-top:10px">
-  <h5>App en període de proves!!</h5>
-  <b>Llista de tasques pendents (programació):</b>
+<div style="margin-top:10px">
+  <b>App en fase de proves. Pot haver-hi errors!</b>
+  <p style="font-size:smaller"><em>Pots enviar idees/suggeriments/millores/errors trobats a: <a href="mailto:holalluis@gmail.com">holalluis@gmail.com</a>. Gràcies! </em></p>
+  <b>Tasques pendents programació:</b>
+  <p>Llista bugs (alta prioritat):</p>
   <ol>
     <li>Cartes obligades (no poder jugar qualsevol carta).
-    <li>Poder veure última basa.
-    <li>Poder triar punts partida (51, 101, 151).
-    <li>Que el jugador sempre surti a baix (esteve).
-    <li>Ordenar cartes per número (roger).
-    <li>Afegir emoticones al xat (francesc).
-    <li>Netejar tablero quan s'esborri partida
-    <li>en iphone el doble click fa zoom
-    <li>amagar botó "començar partida" quan la partida està en marxa
   </ol>
-  <p style="font-size:smaller"><em>Pots enviar idees/suggeriments/millores/errors &rarr; <a href="mailto:holalluis@gmail.com">holalluis@gmail.com</a>. Gràcies! </em></p>
+  <p>Llista coses noves (baixa prioritat):</p>
+  <ol>
+    <li>Poder triar punts partida (51, 101, 151).
+    <li>Poder triar obligat/lliure.
+    <li>Poder veure última basa.
+    <li>Afegir emoticones al xat (francesc).
+    <li>Que el jugador sempre surti a baix (esteve).
+  </ol>
 </div>
 
-<footer style=height:500px></footer>
-
-</div>
+<!--fi pagina-->
+<footer>
+  Botifarra online |
+  Creat per <a href=mailto:holalluis@gmail.com>Lluís Bosch</a> (2018)
+</footer>
 
 <!--client app-->
 <script src="client.js"></script>
-

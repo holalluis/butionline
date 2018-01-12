@@ -1,6 +1,8 @@
 /*general*/
   body{
     margin-top:0;
+    margin-bottom:0;
+    margin-right:0;
     font-family:Helvetica;
     overflow-y:scroll;
   }
@@ -8,11 +10,16 @@
   input{
     outline:none;
     padding:4px;
-    margin-right:-1px;
+    border-width:1px;
+    border-right:none;
   }
-
   input:hover{
     border-color:#ccc;
+  }
+
+  button{
+    outline:none;
+    border-width:1px;
   }
 
   ul{
@@ -31,13 +38,22 @@
   }
 
   hr{
-    margin-bottom:1px;
+    margin-bottom:2px;
     border:none;
     border-bottom:1px solid #ccc;
   }
 
   body > hr, #main > hr {
     margin-left:-8px;
+  }
+
+  footer{
+    margin-left:-8px;
+    padding:1em;
+    height:300px;
+    background:linear-gradient(to top,white,black);
+    color:grey;
+    font-family:monospace;
   }
 
 

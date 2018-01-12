@@ -4,12 +4,12 @@
  */
 function Partida(creador){
   //propietats globals
-  this.creador=creador; //socket.id usuari
+  this.creador=creador; //sock id usuari
   this.objectiu=101;    //51 | 101 | 151 punts
   this.jugadors=1;      //0-4
   this.en_marxa=false;  //partida en marxa
 
-  //equips: jugadors N+S vs jugadors E+O
+  //equips: jugadors N+S vs E+O
   this.equips={
     "1":{
       punts:0,
@@ -42,6 +42,7 @@ module.exports=Partida;
 Partida.prototype.reset=function(){
   this.equips[1].punts=0;
   this.equips[2].punts=0;
+  this.en_marxa=false;
   this.canta=null;
   this.triomf=null;
   this.multiplicador=null;
@@ -56,10 +57,10 @@ Partida.prototype.reset=function(){
 //compta jugadors N+S vs E+O
 Partida.prototype.comptaJugadors=function(){
   var jug=0;
-  if(this.equips[1].jugadorN)jug++;
-  if(this.equips[1].jugadorS)jug++;
-  if(this.equips[2].jugadorE)jug++;
-  if(this.equips[2].jugadorO)jug++;
+  if(this.equips[1].jugadorN) jug++;
+  if(this.equips[1].jugadorS) jug++;
+  if(this.equips[2].jugadorE) jug++;
+  if(this.equips[2].jugadorO) jug++;
   this.jugadors=jug;
   return jug;
 }
@@ -68,18 +69,12 @@ Partida.prototype.comptaJugadors=function(){
 Partida.prototype.afegirJugador=function(sock_id){
   //si ja hi ha 4 persones
   if(this.comptaJugadors()>=4){
-    console.log("Partida plena ("+this.creador+")")
+    console.log("partida plena ("+this.creador+")")
     return false;
   }
   //si el jugador ja és dins
-  else if([
-    this.equips[1].jugadorN,
-    this.equips[1].jugadorS,
-    this.equips[2].jugadorE,
-    this.equips[2].jugadorO,
-    ].indexOf(sock_id)+1
-  ){
-    console.log("Jugador ja forma part de partida ("+this.creador+")")
+  else if(this.isPart(sock_id)){
+    console.log("jugador ja forma part de partida ("+this.creador+")")
     return false;
   }else{
     if     (this.equips[1].jugadorN==null) this.equips[1].jugadorN=sock_id;
@@ -90,7 +85,6 @@ Partida.prototype.afegirJugador=function(sock_id){
       console.log("No s'ha pogut afegir jugador (error desconegut)");
       return false;
     }
-    console.log("Jugador afegit a ("+this.creador+")");
     this.jugadors++;
     return true;
   }
@@ -103,7 +97,9 @@ Partida.prototype.esborraJugador=function(sock_id){
   else if(this.equips[1].jugadorS==sock_id) this.equips[1].jugadorS=null;
   else if(this.equips[2].jugadorE==sock_id) this.equips[2].jugadorE=null;
   else if(this.equips[2].jugadorO==sock_id) this.equips[2].jugadorO=null;
-  this.comptaJugadors();
+
+  if(this.comptaJugadors()<4){
+    this.reset();}
 }
 
 //check if sock_id forma part de la partida
@@ -121,14 +117,14 @@ Partida.prototype.isPart=function(sock_id){
   }
 };
 
-//retorna un jugador a l'atzar
+//retorna un jugador a l'atzar o el següent jugador
 Partida.prototype.quiCanta=function(){
-  //si ja ha cantat algú abans, canta el següent
+  //si ja ha cantat algú abans canta el següent
   if(this.canta){
     this.canta=this.getNextJugador(this.canta);
     return this.canta;
   }
-  //si canta val null canta random
+  //si canta==null canta random
   var jug=[
     this.equips[1].jugadorN,
     this.equips[1].jugadorS,

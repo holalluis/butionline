@@ -2,7 +2,7 @@
   background:green;
   position:relative;
   width:620px;
-  height:430px;
+  height:424px;
   user-select:none;
   margin-left:-8px;
 }
@@ -50,7 +50,7 @@
 /*triomf*/
 #tapet #triomf {
   position:absolute;
-  top:293px;
+  top:287px;
   right:0;
   border:1px solid blue;
   background:lightgreen;
@@ -92,5 +92,5 @@
 /*botons contrar/recontrar/santvicenç*/
 #tapet div.menu-cantar button {
   padding:10px 16px;
-  margin:0 5px;
+  margin:0 3px;
 }

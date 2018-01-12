@@ -2,8 +2,8 @@
 var debug=false;
 var debug=true;
 
-/* new client socket */
-var socket = io.connect('http://192.168.1.129:4000');
+/* new client socket (  ovh:  164.132.111.240) */
+var socket=io.connect('http://192.168.001.130:4000');
 
 /* Variables globals */
   var timeout_typing_event=false; //per event typing
@@ -43,29 +43,20 @@ var socket = io.connect('http://192.168.1.129:4000');
   var status_partida=document.getElementById('status_partida');
   var triomf=document.getElementById('triomf');
   //log
+  var punts_e1=document.getElementById('punts_e1');
+  var punts_e2=document.getElementById('punts_e2');
   var tipus_partida=document.getElementById('tipus_partida');
   var log=document.getElementById('log');
 
 
 /* Utils */
-  //fx que es crida a <body onload=init()>
+  //fx <body onload=init()>
   function init(){
     if(debug){
       //entrar automàticament
       btn_entrar.dispatchEvent(new CustomEvent('click'));
-      //crear partida automàticament
-      //btn_crear_partida.dispatchEvent(new CustomEvent('click'));
     }
     nom_usuari.select();
-  }
-
-  //fes visible coses invisibles
-  function activaControlsXat(){
-    [
-      xat_controls,
-      btn_crear_partida,
-    ]
-    .forEach(el=>{el.style.visibility='visible';});
   }
 
   //log partida + status
@@ -95,24 +86,21 @@ var socket = io.connect('http://192.168.1.129:4000');
 
 
 /* DOM events */
-  //button crear partida
+  //btn crear partida
   btn_crear_partida.addEventListener('click',function(){
     //emet event crear_partida
     socket.emit('crear-partida');
-
-    //amaga el botó
-    btn_crear_partida.style.visibility='hidden';
   });
 
-  //button entrar onclick
+  //btn entrar onclick
   btn_entrar.addEventListener('click',function(){
     //no facis res si nom està buit
     if(nom_usuari.value=="")return;
-    //comprova si el nom d'usuari ja existeix
+    //comprova si nom usuari ja existeix
     (function(){
       usuari=nom_usuari.value;
       while(usuaris_actuals.filter(u=>{return u.nom==usuari && u.id!=socket.id}).length){
-        usuari=usuari+"2"; //modifica el nom
+        usuari=usuari+"2"; //modifica nom
         nom_usuari.value=usuari;
       }
     })();
@@ -123,13 +111,13 @@ var socket = io.connect('http://192.168.1.129:4000');
     //canvia el <title></title>
     document.title="Botifarra - "+usuari;
 
-    //fes la resta de la pàgina visible
+    //fes visible la pàgina
     document.getElementById('main').style.display='block';
 
     //emet event entrar
     socket.emit('entrar',usuari);
 
-    //guarda l'usuari al cookie "nom_usuari"
+    //guarda usuari al cookie "nom_usuari"
     document.cookie="nom_usuari="+usuari;
   });
 
@@ -142,7 +130,7 @@ var socket = io.connect('http://192.168.1.129:4000');
     }
   });
 
-  //btn_missatge onclick
+  //btn missatge onclick
   btn_missatge.addEventListener('click',function(){
     if(missatge.value=="")return;
     //emet event xat
@@ -157,14 +145,39 @@ var socket = io.connect('http://192.168.1.129:4000');
     //emet event typing
     socket.emit('typing',usuari);
     //si prem enter envia el missatge
-    var key = e.which || e.keyCode;
-    if (key === 13) { // 13 is enter
-      btn_missatge.dispatchEvent(new CustomEvent('click'));
-    }
+    var key=e.which||e.keyCode;
+    if(key===13){
+      btn_missatge.dispatchEvent(new CustomEvent('click'));}
   });
 
 
 /* Escolta events socket emesos pel servidor */
+socket.on('partida-abandonada',function(){
+  //significa que un jugador ha abandonat la partida
+  partida=null;
+  partides_actuals=[];
+
+  //1. missatge partida abandonada
+  echo('un jugador ha abandonat la partida :(');
+
+  //2. esborra menus cantar/contrar si cal
+  var menus=document.querySelectorAll('div.menu-cantar');
+  for(var i=0;i<menus.length;i++){
+    menus[i].parentNode.removeChild(menus[i]);}
+
+  //3. esborra les cartes del tapet
+  var cartes=document.querySelectorAll('#tapet img');
+  for(var i=0;i<cartes.length;i++){
+    cartes[i].parentNode.removeChild(cartes[i]);}
+
+  //4. marcadors de punts a 0
+  punts_e1.innerHTML=0;
+  punts_e2.innerHTML=0;
+
+  //5. tipus partida reset
+  tipus_partida="Partida NO contrada";
+});
+
 socket.on('anunci-multiplicador',function(m){
   partida.multiplicador=m;
   switch(m){
@@ -176,11 +189,11 @@ socket.on('anunci-multiplicador',function(m){
 });
 
 socket.on('esperant-santvicenç',function(){
-  //crea un menú per fer santvicenç
+  //crea menú santvicenç
   var div=document.createElement('div');
   tapet.appendChild(div);
   div.classList.add('menu-cantar');
-  div.innerHTML="<h5>Els rivals han recontrat. Vols fer Sant Vicenç?</h5>";
+  div.innerHTML="<h5>Els rivals han recontrat. Vols fer Sant Vicenç (x8)?</h5>";
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
@@ -189,7 +202,6 @@ socket.on('esperant-santvicenç',function(){
   div.appendChild(btn_n);
   btn_y.innerHTML="Sí";
   btn_n.innerHTML="No";
-
   btn_y.addEventListener('click',function(){
     socket.emit('santvicenç',{partida_id:partida.creador,santvicenç:true});
     div.parentNode.removeChild(div);
@@ -201,52 +213,50 @@ socket.on('esperant-santvicenç',function(){
 });
 
 socket.on('esperant-recontro',function(){
-  //crea un menú per recontrar
-  var div_recontrar=document.createElement('div');
-  tapet.appendChild(div_recontrar);
-  div_recontrar.classList.add('menu-cantar');
-  div_recontrar.innerHTML="<h5>Els rivals han contrat. Vols recontrar?</h5>";
+  //crea menú recontrar
+  var div=document.createElement('div');
+  tapet.appendChild(div);
+  div.classList.add('menu-cantar');
+  div.innerHTML="<h5>Els rivals han contrat. Vols recontrar (x4)?</h5>";
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
   var btn_n=document.createElement('button');
-  div_recontrar.appendChild(btn_y);
-  div_recontrar.appendChild(btn_n);
+  div.appendChild(btn_y);
+  div.appendChild(btn_n);
   btn_y.innerHTML="Sí";
   btn_n.innerHTML="No";
-
   btn_y.addEventListener('click',function(){
     socket.emit('recontrar',{partida_id:partida.creador,recontrar:true});
-    div_recontrar.parentNode.removeChild(div_recontrar);
+    div.parentNode.removeChild(div);
   });
   btn_n.addEventListener('click',function(){
     socket.emit('recontrar',{partida_id:partida.creador,recontrar:false});
-    div_recontrar.parentNode.removeChild(div_recontrar);
+    div.parentNode.removeChild(div);
   });
 });
 
 socket.on('esperant-contro',function(){
-  //crea un menú per contrar
-  var div_contrar=document.createElement('div');
-  tapet.appendChild(div_contrar);
-  div_contrar.classList.add('menu-cantar');
-  div_contrar.innerHTML="<h5>Han cantat "+partida.triomf+". Vols contrar?</h5>";
+  //crea menú contrar
+  var div=document.createElement('div');
+  tapet.appendChild(div);
+  div.classList.add('menu-cantar');
+  div.innerHTML="<h5>Han cantat "+partida.triomf+". Vols contrar (x2)?</h5>";
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
   var btn_n=document.createElement('button');
-  div_contrar.appendChild(btn_y);
-  div_contrar.appendChild(btn_n);
+  div.appendChild(btn_y);
+  div.appendChild(btn_n);
   btn_y.innerHTML="Sí";
   btn_n.innerHTML="No";
-
   btn_y.addEventListener('click',function(){
     socket.emit('contrar',{partida_id:partida.creador,contrar:true});
-    div_contrar.parentNode.removeChild(div_contrar);
+    div.parentNode.removeChild(div);
   });
   btn_n.addEventListener('click',function(){
     socket.emit('contrar',{partida_id:partida.creador,contrar:false});
-    div_contrar.parentNode.removeChild(div_contrar);
+    div.parentNode.removeChild(div);
   });
 });
 
@@ -262,8 +272,8 @@ socket.on('ronda-acabada',function(punts){
   partida.equips[2].punts+=e2;
 
   //update view
-  document.getElementById('punts_e1').innerHTML=partida.equips[1].punts;
-  document.getElementById('punts_e2').innerHTML=partida.equips[2].punts;
+  punts_e1.innerHTML=partida.equips[1].punts;
+  punts_e2.innerHTML=partida.equips[2].punts;
 
   //check if partida acabada
   if(partida.equips[1].punts>=partida.objectiu || partida.equips[2].punts>=partida.objectiu){
@@ -271,7 +281,8 @@ socket.on('ronda-acabada',function(punts){
     var p2=partida.equips[2].punts;
     echo('<big><b>partida acabada ('+p1+' a '+p2+')</b></big>');
 
-    //reset per poder recomençar
+    //reset per poder recomençar partida
+    partida.en_marxa=false;
     partida.equips[1].punts=0;
     partida.equips[2].punts=0;
     partida.actiu=null;
@@ -283,20 +294,20 @@ socket.on('ronda-acabada',function(punts){
     partida.triomf=null;
 
     //update view
-    document.getElementById('punts_e1').innerHTML=partida.equips[1].punts;
-    document.getElementById('punts_e2').innerHTML=partida.equips[2].punts;
+    punts_e1.innerHTML=0;
+    punts_e2.innerHTML=0;
     tipus_partida.innerHTML="Partida NO contrada";
 
     //final partida
     return;
   }
 
-  //creador demana al servidor iniciar següent ronda
+  //creador demana iniciar següent ronda
   if(socket.id==partida.creador){socket.emit('start-ronda');}
 });
 
 socket.on('recollir-basa',function(){
-  echo("recull la basa fent click al tapet");
+  echo('recull la basa fent click al tapet');
   tapet.addEventListener('click',function recollir(){
     this.removeEventListener('click',recollir);
     var cartes=document.querySelectorAll('#tapet div.jugador img');
@@ -304,13 +315,17 @@ socket.on('recollir-basa',function(){
       var c=cartes[i];
       c.parentNode.removeChild(c);
     }
-    echo("esperant que tothom reculli la basa");
+    echo('esperant que tothom reculli la basa');
     socket.emit('basa-recollida',partida.creador);
   });
 
+  //debug: recollir basa automàtic
   if(debug){
-    tapet.dispatchEvent(new CustomEvent('click'));
-  }
+    tapet.dispatchEvent(new CustomEvent('click'));}
+
+  //treu ressaltat jugador actiu
+  var actiu=document.querySelector('div.jugador.actiu');
+  if(actiu){actiu.classList.remove('actiu');}
 });
 
 socket.on('tirada-legal',function(data){
@@ -318,7 +333,7 @@ socket.on('tirada-legal',function(data){
   var pal=data.pal;
   var num=data.num;
 
-  //fes apareixer la carta al tapete
+  //fes apareixer carta al tapet
   var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
   carta.innerHTML+="<img src='/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg'>";
 
@@ -326,24 +341,19 @@ socket.on('tirada-legal',function(data){
   if(id==socket.id){
     var carta=document.querySelector('#ma img.carta[pal='+pal+'][num="'+num+'"]');
     carta.parentNode.removeChild(carta);
-
     //deixa de ser jugador actiu
     partida.actiu=null;
   }
 });
 
 socket.on('esperant-tirada',function(jugador_id){
-  //treu emfasi anterior usuari actiu
-  var carta=document.querySelector("#tapet div.jugador.actiu");
-  if(carta)carta.classList.remove('actiu');
-
   //jugador actiu
   partida.actiu=jugador_id;
 
   //get nick jugador actiu
   var nick=getUsername(jugador_id);
   if(socket.id==jugador_id){
-    echo("ÉS EL TEU TORN! Fes doble-click a una carta");
+    echo("ÉS EL TEU TORN! Fes click a una carta");
 
     //crea mini animació per cridar atenció
     status_partida.style.transition='background 1s';
@@ -355,28 +365,31 @@ socket.on('esperant-tirada',function(jugador_id){
   }
   //futur: posa un so per indicar que et toca
 
+  //treu ressaltat jugador actiu
+  var actiu=document.querySelector('div.jugador.actiu');
+  if(actiu){actiu.classList.remove('actiu');}
+
   //posa emfasi al nou jugador actiu
   var carta=document.querySelector("#tapet div.jugador[socket='"+jugador_id+"']");
   carta.classList.add('actiu');
 
-  //gestiona els listeners del doble clic per les cartes de la mà
+  //gestiona els listeners del clic per les cartes de la mà
   var cartes=document.querySelectorAll('#ma img.carta');
 
-  //fx listener per cartes de la mà
-
-  //elimina listeners de totes les cartes fent dblclick
+  //elimina listeners de totes les cartes fent click
   var temp_id=partida.actiu;
   partida.actiu=null;
   for(var i=0;i<cartes.length;i++){
-    cartes[i].dispatchEvent(new CustomEvent('dblclick'));
+    cartes[i].dispatchEvent(new CustomEvent('click'));
   }
   partida.actiu=temp_id;
 
+  //TODO programar normes tirar obligat
   //posa listeners a les cartes del jugador actiu
   if(socket.id==partida.actiu){
     for(var i=0;i<cartes.length;i++){
-      cartes[i].addEventListener('dblclick',function listener(){
-        this.removeEventListener('dblclick',listener);
+      cartes[i].addEventListener('click',function listener(){
+        this.removeEventListener('click',listener);
         //impedeix jugar al jugador no actiu
         if(partida.actiu!=socket.id){return;}
         //emet tirada
@@ -386,45 +399,47 @@ socket.on('esperant-tirada',function(jugador_id){
       });
     }
 
-    //debug: tira automàticament (carta random)
-    if(debug){cartes[0].dispatchEvent(new CustomEvent('dblclick'));}
+    //debug: tira automàticament carta random
+    if(debug){cartes[0].dispatchEvent(new CustomEvent('click'));}
   }
 });
 
 socket.on('delegar',function(){
-  var div_cantar=document.createElement('div');
-  tapet.appendChild(div_cantar);
-  div_cantar.classList.add('menu-cantar');
-  div_cantar.innerHTML="<h5>T'han delegat. Selecciona triomf (doble-click)</h5>";
+  //crea menu delegar
+  var div=document.createElement('div');
+  tapet.appendChild(div);
+  div.classList.add('menu-cantar');
+  div.innerHTML="<h5>T'han delegat. Selecciona triomf (click)</h5>";
 
-  //afegeix imatges asos de cada pal, buti
+  //afegeix imatges asos de cada pal i buti
   ['oros','copes','espases','bastos','botifarra'].forEach(pal=>{
     var img=document.createElement('img');
-    div_cantar.appendChild(img);
+    div.appendChild(img);
     img.title=pal;
     if(pal=='botifarra'){
       img.src="/img/botifarra.jpg";
     }else{
       img.src="/img/cartes/"+pal.substring(0,2)+"01.jpg";
     }
-    img.addEventListener('dblclick',function(){
+    img.addEventListener('click',function(){
       socket.emit('triomf-triat',{creador:partida.creador,pal});
-      div_cantar.parentNode.removeChild(div_cantar);
+      div.parentNode.removeChild(div);
     });
   });
 });
 
 socket.on('triomf-triat',function(pal){
+  //missatge esperant delegat
   if(pal=="delegar"){
     echo("s'ha delegat. Esperant company");
     return;
   }
 
-  //pal triat
+  //mostra pal triat
   partida.triomf=pal;
-  echo(getUsername(partida.canta)+' ha cantat: '+pal+'. Esperant si es contra');
+  echo(getUsername(partida.canta)+' ha cantat '+pal+'. Esperant si es contra');
 
-  //seteja icona pal triat a triomf
+  //posa icona pal triat a element triomf
   triomf.innerHTML="<img src='img/ico_"+pal.substring(0,2)+".jpg'>";
   triomf.style.visibility='visible';
 });
@@ -433,17 +448,18 @@ socket.on('anuncia-qui-canta',function(sock_id){
   partida.canta=sock_id;
   var nick=getUsername(sock_id);
   echo("esperant que "+nick+" canti");
-  //crea un menú per triar pal
-  if(sock_id==socket.id){
-    var div_cantar=document.createElement('div');
-    tapet.appendChild(div_cantar);
-    div_cantar.classList.add('menu-cantar');
-    div_cantar.innerHTML="<h5>Selecciona triomf (doble-click)</h5>";
 
-    //afegeix imatges asos de cada pal, buti i delegar
+  //crea menú triar pal
+  if(sock_id==socket.id){
+    var div=document.createElement('div');
+    tapet.appendChild(div);
+    div.classList.add('menu-cantar');
+    div.innerHTML="<h5>Selecciona triomf (click)</h5>";
+
+    //afegeix: imatges asos de cada pal, buti i delegar
     ['oros','copes','espases','bastos','botifarra','delegar'].forEach(pal=>{
       var img=document.createElement('img');
-      div_cantar.appendChild(img);
+      div.appendChild(img);
       img.title=pal
 
       if(pal=='botifarra'){
@@ -454,9 +470,9 @@ socket.on('anuncia-qui-canta',function(sock_id){
         img.src="/img/cartes/"+pal.substring(0,2)+"01.jpg";
       }
 
-      img.addEventListener('dblclick',function(){
+      img.addEventListener('click',function(){
         socket.emit('triomf-triat',{creador:partida.creador,pal});
-        div_cantar.parentNode.removeChild(div_cantar);
+        div.parentNode.removeChild(div);
       });
     });
   }
@@ -465,10 +481,22 @@ socket.on('anuncia-qui-canta',function(sock_id){
 socket.on('repartir',function(cartes){
   ma.innerHTML="";
   ma_actual=cartes;
-  //ordena la ma rebuda per pal (or,co,es,ba)
+
+  //ordena mà rebuda per pal (or,co,es,ba)
   ['or','co','es','ba'].forEach(pal=>{
     cartes
       .filter(c=>{return c.pal==pal})
+      .filter(c=>{
+        if(c.num==1){c.num=13;}
+        if(c.num==9){c.num=14;}
+        return true;
+      })
+      .sort((c1,c2)=>{return c2.num-c1.num})
+      .filter(c=>{
+        if(c.num==13){c.num=1;}
+        if(c.num==14){c.num=9;}
+        return true;
+      })
       .forEach(c=>{
         var pal=c.pal;
         var num=(c.num<10)?"0"+c.num:c.num;
@@ -476,7 +504,7 @@ socket.on('repartir',function(cartes){
       });
   });
 
-  //amaga el botó començar
+  //amaga botó començar
   var btn_start=document.querySelector('button.btn_start');
   if(btn_start)btn_start.parentNode.removeChild(btn_start);
 
@@ -552,9 +580,7 @@ socket.on('refresca-usuaris',function(usuaris_connectats){
   usuaris_connectats.forEach(u=>{
     var nom=u.nom;
     if(u.id==socket.id){
-      nom="<b>"+nom+"</b>";
-      activaControlsXat();
-    }
+      nom="<b>"+nom+"</b>";}
     usuaris.innerHTML+='<li title='+u.id+'>'+nom+'</li>';
   });
 });
@@ -564,9 +590,8 @@ socket.on('refresca-partides',function(partides_arr){
   comptador_partides.innerHTML=partides_arr.length;
   partides_actuals=partides_arr;
   partides.innerHTML="";
-
   if(partides_arr.length==0){
-    partides.innerHTML="<small><i>~no hi ha partides</i></small>";
+    partides.innerHTML="<small><i style=color:#666>~no hi ha partides</i></small>";
   }
 
   partides_arr.forEach((p,i)=>{
@@ -577,9 +602,12 @@ socket.on('refresca-partides',function(partides_arr){
     div_partida.innerHTML+="Partida "+(i+1);
     div_partida.innerHTML+=" (jugadors: "+p.jugadors+"/4) ";
 
-    //afegeix botó esborrar partida si ets creador
+    //pinta de verd si hi ha lloc
+    if(p.jugadors<4){div_partida.style.color='green';}
+
+    //afegeix botó esborrar partida
     if(p.creador==socket.id){
-      //amaga els botons "join" i "create"
+      //amaga botons "join" i "create"
       (function(){
         var btns=document.querySelectorAll('button.btn_join');
         for(var i=0;i<btns.length;i++){
@@ -588,33 +616,36 @@ socket.on('refresca-partides',function(partides_arr){
         btn_crear_partida.style.visibility='hidden';
       })();
 
+      //botó esborrar
       var btn=document.createElement('button');
       div_partida.appendChild(btn);
       btn.innerHTML='esborrar';
       btn.setAttribute('onclick','socket.emit("esborrar-partida")'); //no sé pq no funciona addEventListener
 
-      //afegeix botó començar si ja hi ha 4 persones
+      //afegeix botó començar
       if(p.jugadors==4){
         div_partida.innerHTML+=" ";
 
+        /*
+        //(futur)
+        //crea select triar punts (51, 101, 151)
         (function(){
-          //crea select triar punts (51, 101, 151)
-          /*
           var select=" <select id=select_punts><option>51<option selected>101<option>151</select> ";
           div_partida.innerHTML+=select;
-          */
         })();
+        */
 
         //crea btn començar
-        var btn=document.createElement('button');
-        div_partida.appendChild(btn);
-        btn.innerHTML='començar';
-        btn.classList.add('btn_start');//cal fer desaparèixer després de repartir
-        btn.setAttribute('onclick','socket.emit("start-partida");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
-        btn.style.background='lightgreen';
-
+        if(p.en_marxa==false){
+          var btn=document.createElement('button');
+          div_partida.appendChild(btn);
+          btn.innerHTML='començar';
+          btn.classList.add('btn_start');
+          btn.setAttribute('onclick','socket.emit("start-partida");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
+          btn.style.background='lightgreen';
+        }
       }
-    }else if(p.jugadors<4){
+    }else if(p.jugadors<4 && partida==null){
       //afegeix botó unir-se
       var btn=document.createElement('button');
       div_partida.appendChild(btn);
@@ -623,7 +654,7 @@ socket.on('refresca-partides',function(partides_arr){
       btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
     }
 
-    //llista els jugadors de la partida i posa un botó per sortir de la partida
+    //llista jugadors partida i posa botó per sortir partida
     (function(){
       [
         p.equips[1].jugadorN,
@@ -637,16 +668,13 @@ socket.on('refresca-partides',function(partides_arr){
           div_partida.appendChild(div_jugador)
           div_jugador.style.fontSize='smaller';
           div_jugador.innerHTML="- "+nick+" ";
-
-          if(id==p.creador){
-            div_jugador.innerHTML+="(creador) ";
-          }
+          if(id==p.creador){div_jugador.innerHTML+="(creador) ";}
 
           //afegeix botó "sortir de la partida"
           if(id==socket.id && p.creador!=socket.id){
             div_jugador.innerHTML+="<button onclick=socket.emit('exit-partida','"+p.creador+"')>sortir</button>";
 
-            //amaga els botons "join" i "create"
+            //també amaga botons "join" i "create"
             (function(){
               var btns=document.querySelectorAll('button.btn_join');
               for(var i=0;i<btns.length;i++){
@@ -658,18 +686,23 @@ socket.on('refresca-partides',function(partides_arr){
         }
       });
     })();
-    partides.innerHTML+="<hr>";
+
+    //mini detall estètic
+    partides.innerHTML+='<hr>';
   });
 });
 
 socket.on('start-partida',function(sock_id){
   echo("començant partida '"+sock_id+"'");
+
+  //reset al log
+  log.innerHTML='';
+
   //get objecte partida
   partida=getPartida(sock_id);
 
-  //creador demana iniciar ronda al servidor
+  //creador demana al servidor iniciar ronda
   if(socket.id==partida.creador){
     socket.emit('start-ronda');
   }
 });
-

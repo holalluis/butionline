@@ -1,23 +1,28 @@
 # botifarra online
 
-Joc de la botifarra online inspirat en el butinet (butinet.cat).
+Joc de la botifarra online inspirat en el butinet.
 
-La motivació principal per crear aquesta versió és les restriccions que imposa
-el butinet actualment (2018):
+La motivació principal per crear aquesta versió alternativa és que volia
+aprendre a fer servir la tecnologia websockets
+amb algun projecte petit, i també perquè un dia provant el butinet amb uns
+amics vam trobar una sèrie de
+restriccions que no ens van agradar gens.
 
-- butinet només permet crear partides als usuaris premium (~50 euros/any).
-- butinet només permet jugar durant una hora al dia als jugadors free.
-- butinet fa esperar 30 segons per entrar a la partida als jugadors free.
+- El butinet t'obliga a registrar-te com a usuari.
+- El butinet només permet crear partides als usuaris premium (que paguen uns 50
+euros/any).
+- El butinet només permet jugar durant una hora al dia als jugadors free.
+- El butinet fa esperar 30 segons per entrar a la partida als jugadors free.
 
-La intenció és programar una nova versió per eliminar tot tipus de restriccions
-als usuaris.
+La intenció és programar una botifarra sense cap tipus de restricció.
 
-## status: en desenvolupament
+Com que no tinc cap ànim de lucre amb aquest projecte, i és per ús propi, no
+ofereixo cap garantia que el servidor funcioni bé les 24 hores del dia.
 
 ## objectiu monetització: no
-
+## status: en desenvolupament
 ## implementat fent servir:
-- html + css
-- node js
+- html + css + javascript (client)
+- node js + express (servidor)
 - express
 - websockets (socket.io)
