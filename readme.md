@@ -3,7 +3,8 @@ Joc de la botifarra online inspirat en el butinet.
 
 La motivació principal per crear aquesta versió alternativa és que volia
 aprendre a fer servir la tecnologia websockets
-amb algun projecte petit, i també perquè un dia provant el butinet amb uns
+amb algun projecte petit tipus SPA (single-page-app) i també perquè un dia
+provant el butinet amb uns
 amics vam trobar una sèrie de
 restriccions que no ens van agradar gens.
 
