@@ -11,10 +11,22 @@
 
 <!--entrar a la sala-->
 <div class=flex>
-  <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=30 value='nai'>
+  <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=20 value='nai'>
   <button id=btn_entrar>entrar</button>
   <script>
     (function(){
+      /*NOM USUARI*/
+      var nom_usuari=document.getElementById('nom_usuari');
+
+      //processa primer paràmetre GET com a nick, si n'hi ha
+      var GET1=window.location.search.substr(1).split('=')[1];
+      if(GET1){
+        nom_usuari.value=GET1;
+        return;
+      }
+
+      //si no GET processa cookie
+      //comprova si usuari ja havia entrat abans per guardar el nom
       //get cookie (stackoverflow)
       function getCookie(cname){
         var name=cname+"=";
@@ -28,14 +40,13 @@
         }
         return false;
       }
-      //comprova si usuari ja havia entrat abans per guardar el nom
-      //sinó escriu un número aleatori de l'1 al 1000
-      var nom_usuari=document.getElementById('nom_usuari');
       var cookie_nom_usuari=getCookie('nom_usuari');
       if(cookie_nom_usuari){
         nom_usuari.value=cookie_nom_usuari;
-      }else{
-        nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);}
+        return;
+      }
+      //si no GET ni cookie escriu num random 1 a 1000
+      nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);
     })();
   </script>
 </div>
@@ -100,7 +111,9 @@
 
     <!--status+triomf-->
     <div id=status_partida>esperant nova partida</div>
-    <div id=triomf style=visibility:hidden></div>
+    <div id=triomf style="visibility:hidden">
+      <img src="img/ico_bo.jpg">
+    </div>
 
     <!--ma-->
     <div id=ma>
@@ -183,27 +196,30 @@
 
 <!--per fer-->
 <div style="margin-top:10px">
-  <b>App en fase de proves. Pot haver-hi errors!</b>
+  <b>App en fase de proves!</b>
   <p style="font-size:smaller"><em>Pots enviar idees/suggeriments/millores/errors trobats a: <a href="mailto:holalluis@gmail.com">holalluis@gmail.com</a>. Gràcies! </em></p>
   <b>Tasques pendents programació:</b>
   <p>Llista bugs (alta prioritat):</p>
   <ol>
-    <li>Cartes obligades (no poder jugar qualsevol carta).
+    <li><small>~llista buida</small>
   </ol>
   <p>Llista coses noves (baixa prioritat):</p>
   <ol>
-    <li>Poder triar punts partida (51, 101, 151).
-    <li>Poder triar obligat/lliure.
-    <li>Poder veure última basa.
-    <li>Afegir emoticones al xat (francesc).
-    <li>Que el jugador sempre surti a baix (esteve).
+    <li>Poder triar punts partida (51, 101, 151) [fàcil].
+    <li>Poder triar obligat/lliure [difícil].
+    <li>Poder veure última basa [fàcil].
+    <li>Afegir emoticones al xat (francesc) [fàcil].
+    <li>Que el jugador sempre surti a baix (esteve) [difícil].
+    <li>Poder reanudar partides on algú marxa [difícil].
+    <li>Poder fer fora gent que no es comporta [fàcil].
   </ol>
 </div>
 
 <!--fi pagina-->
 <footer>
   Botifarra online |
-  Creat per <a href=mailto:holalluis@gmail.com>Lluís Bosch</a> (2018)
+  Creat per Lluís Mª Bosch (2018) |
+  <a href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a>
 </footer>
 
 <!--client app-->

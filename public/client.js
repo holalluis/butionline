@@ -1,9 +1,12 @@
 /*DEBUG*/
-var debug=false;
 var debug=true;
+var debug=false;
 
-/* new client socket (  ovh:  164.132.111.240) */
-var socket=io.connect('http://127.000.000.001:4000');
+/* New client socket
+var socket=io.connect('http://164.132.111.240:4000'); //servidor
+var socket=io.connect('http://127.000.000.001:4000'); //loopback 
+*/
+var socket=io.connect('http://192.168.001.130:4000'); //local
 
 /* Variables globals */
   var timeout_typing_event=false; //per event typing
@@ -55,6 +58,10 @@ var socket=io.connect('http://127.000.000.001:4000');
     if(debug){
       //entrar automàticament
       btn_entrar.dispatchEvent(new CustomEvent('click'));
+      //disable auto scroll
+      if(history && ('scrollRestoration' in history)){
+        history.scrollRestoration='manual';
+      }
     }
     nom_usuari.select();
   }
@@ -259,6 +266,9 @@ socket.on('esperant-contro',function(){
     socket.emit('contrar',{partida_id:partida.creador,contrar:false});
     div.parentNode.removeChild(div);
   });
+
+  //debug: click automàtic a no contrar
+  if(debug){btn_n.dispatchEvent(new CustomEvent('click'));}
 });
 
 socket.on('ronda-acabada',function(punts){
@@ -394,122 +404,281 @@ socket.on('esperant-tirada',function(jugador_id){
   partida.actiu=null;
   for(var i=0;i<cartes.length;i++){
     cartes[i].dispatchEvent(new CustomEvent('click'));
+    cartes[i].classList.remove('legal');
   }
   partida.actiu=temp_id;
 
   //posa listeners a les cartes permeses del jugador actiu
   if(socket.id==partida.actiu){
-
-    //normes obligat tirar TODO
-    /*
-    (function(){
-        necessari:
-          pal inicial
-          cal matar
-          partida.triomf
+    //NORMES OBLIGAR A TIRAR
+    function es_legal(carta){
+      /*inputs:
           ma_actual
+          partida.triomf
+          pal inicial
+      */
+      //casos extrems on no cal ni mirar la carta
+      if(ma_actual.length==1 || partida.basa.length==0){return true;}
 
-      //cal matar basa actual (boolean)
+      //info necessària
+      var triomf=partida.triomf.substring(0,2);
+      var basa=partida.basa;
+
+      //tradueix manilla i as per poder comparar números
+      //cal desfer un cop acabada la funció
+      ma_actual.concat(basa).concat(carta).forEach(c=>{
+        if(c.num==1) c.num=13;
+        if(c.num==9) c.num=14;
+      });
+
+      //info necessària
+      //pal inicial, falles pal inicial i falles triomf (bool)
+      var pal_inicial=basa[0].pal;
+      var falles_p=ma_actual.filter(c=>{return c.pal==pal_inicial}).length==0;
+      var falles_t=ma_actual.filter(c=>{return c.pal==triomf}).length==0;
+
+      //determina qui guanya entre 2 primeres cartes tirades
+      function qui_guanya(c0,c1){
+        //mateix pal
+        if(c0.pal==c1.pal){
+          return (c0.num>c1.num) ? 0:1; //carta alta
+        }else{//pal diferent
+          if     (c0.pal==triomf){return 0;}
+          else if(c1.pal==triomf){return 1;}
+          else{
+            //cap dels dos és triomf: guanya el 0
+            return 0;
+          }
+        }
+      }
+
+      //determina qui guanya entre 3 primeres cartes tirades
+      function qui_guanya2(c0,c1,c2){
+        var i=qui_guanya(c0,c1);//index de la basa
+        if(qui_guanya(basa[i],c2)==0){
+          return i;
+        }else{
+          return 2;
+        }
+      }
+
+      //determina si cal matar (bool)
       var cal_matar=(function(){
-        //determina qui guanya de 2 cartes ja jugades en ordre d'una basa (1,2) ò (2,3)
-        function qui_guanya(c0,c1){
-          //mateix pal
-          if(c0.pal==c1.pal){
-            if(c0.num>c1.num){return 0;}
-            else{             return 1;}
+        if     (basa.length==1){return true;} //a la 2na carta sempre s'ha de matar
+        else if(basa.length==2){              //a la 3ra carta no sempre cal matar
+          if(qui_guanya(basa[0],basa[1])==0){return false;} //guanya el company: no cal matar
+          else{                              return true; } //guanya el rival: cal matar
+        }else if(basa.length==3){ //a la quarta carta no sempre cal matar
+          if(qui_guanya2(basa[0],basa[1],basa[2])==1){
+            return false;} //guanya el company: no cal matar
+          else{
+            return true;} //guanya algun rival: cal matar
+        }
+      })();
+
+      /*ALGORITME*/
+      //BASA == 1 CARTA OK
+      if(basa.length==1){
+        if(falles_p==false){//=no fallo
+          //pots matar la carta?
+          var pots_matar=ma_actual.filter(c=>{return c.pal==pal_inicial && c.num>basa[0].num}).length>0;
+          if(pots_matar){
+            //no fallo i puc matar: qualsevol carta del pal inicial que mati la primera
+            return (carta.pal==pal_inicial && carta.num>basa[0].num)
           }else{
-            if     (c0.pal==triomf){return 0;}
-            else if(c1.pal==triomf){return 1;}
-            else{
-              if     (c0.pal==pal_inicial){return 0;}
-              else if(c1.pal==pal_inicial){return 1;}
-              else{
-                //només cas cartes 2 i 3: significa que guanya el company (el que ha sortit)
-                return -1;
+            //no fallo i no puc matar: la més petita
+            return (
+              carta.pal==pal_inicial &&
+              carta.num==Math.min.apply(null,ma_actual.filter(c=>{return c.pal==pal_inicial}).map(c=>{return c.num}))
+            );
+          }
+        }else{//=fallo
+          if(falles_t){//=no tens triomf
+            return true;//descarte
+          }else{//tens triomf
+            return carta.pal==triomf;
+          }
+        }
+      }
+
+      //BASA == 2 CARTES OK
+      if(basa.length==2){
+        if(falles_p==false){//=no fallo
+          if(cal_matar==false){//=no cal matar
+            //no fallo i no cal matar: qualsevol carta del pal inicial
+            return carta.pal==pal_inicial;
+          }else{//cal matar
+            //pots matar la segona carta?
+            var pots_matar=ma_actual.filter(c=>{
+              //només si és del pal inicial i la tinc més gran
+              return c.pal==pal_inicial && basa[1].pal==pal_inicial && c.num>basa[1].num
+            }).length>0;
+
+            if(pots_matar){
+              //no fallo, cal matar i puc matar:
+              //carta del pal més alta que la guanyadora
+              return (carta.pal==pal_inicial && carta.num>basa[1].num);
+            }else{
+              //no fallo i no puc matar: la més petita
+              return (
+                carta.pal==pal_inicial &&
+                carta.num==Math.min.apply(null,ma_actual.filter(c=>{return c.pal==pal_inicial}).map(c=>{return c.num}))
+              );
+            }
+          }
+        }else{//=fallo
+          if(falles_t){//=no tens triomf
+            return true;//fallo i no trinc triomf: qualsevol carta
+          }else{//=tens triomf
+            if(cal_matar==false){
+              return true;//fallo i tinc triomf però no cal matar: qualsevol carta
+            }else{//=cal matar
+              //pots matar la segona carta?
+              var pots_matar=ma_actual.filter(c=>{
+                return (
+                  //si jo tinc triomf i ell no
+                  (c.pal==triomf && basa[1].pal!=triomf) ||
+                  //o si la segona és triomf i jo la tinc més gran
+                  (c.pal==triomf && basa[1].pal==triomf && c.num>basa[1].num)
+                )
+              }).length>0;
+
+              if(pots_matar){
+                //fallo, tinc triomf, cal matar i puc matar
+                return (
+                  //si la segona carta no és triomf i la meva sí
+                  (carta.pal==triomf && basa[1].pal!=triomf) ||
+                  //o si la segona carta és triomf i jo la tinc més alta
+                  (carta.pal==triomf && basa[1].pal==triomf && carta.num>basa[1].num)
+                )
+              }else{
+                //fallo, trinc triomf i no puc matar: qualsevol carta
+                return true;
               }
             }
           }
         }
+      }
 
-        if(basa.length==1){return true;}  //segona carta sempre ha de matar la primera
-        else if(basa.length==2){          //tercera carta no sempre cal matar
-          if(qui_guanya(basa[0],basa[1])==0){return false;} //guanya el company, no cal matar
-          else{                              return true; } //guanya el rival, cal matar
-        }else if(basa.length==3){         //quarta carta no sempre cal matar
-          if(
-            qui_guanya(basa[0],basa[1])==1 &&
-            qui_guanya(basa[1],basa[2])==0
-          ){return false;} //guanya el company: no cal matar
-          else{return true;}
-        }
-      })();
-      console.log('cal matar '+cal_matar);
+      //BASA == 3 CARTES OK
+      //troba la carta guanyadora
+      var cg=basa[qui_guanya2(basa[0],basa[1],basa[2])];
+      if(basa.length==3){
+        if(falles_p==false){//=no fallo
+          if(cal_matar==false){//=no cal matar
+            //no fallo i no cal matar: qualsevol carta del pal inicial
+            return carta.pal==pal_inicial;
+          }else{//cal matar
+            //pots matar la guanyadora?
+            var pots_matar=ma_actual.filter(c=>{
+              //només si és del pal inicial i la tinc més gran
+              return c.pal==pal_inicial && cg.pal==pal_inicial && c.num>cg.num
+            }).length>0;
+            if(pots_matar){
+              //no fallo, cal matar i puc matar:
+              //carta del pal més alta que la guanyadora
+              return (carta.pal==pal_inicial && carta.num>cg.num);
+            }else{
+              //no fallo i no puc matar: la més petita
+              return (
+                carta.pal==pal_inicial &&
+                carta.num==Math.min.apply(null,ma_actual.filter(c=>{return c.pal==pal_inicial}).map(c=>{return c.num}))
+              );
+            }
+          }
+        }else{//=fallo
+          if(falles_t){//=no tens triomf
+            return true;//fallo i no trinc triomf: qualsevol carta
+          }else{//=tens triomf
+            if(cal_matar==false){
+              return true;//fallo i tinc triomf però no cal matar: qualsevol carta
+            }else{//=cal matar
+              //pots matar la guanyadora?
+              var pots_matar=ma_actual.filter(c=>{
+                return (
+                  //si jo tinc triomf i ell no
+                  (c.pal==triomf && cg.pal!=triomf) ||
+                  //o si la guanyadora és triomf i jo la tinc més gran
+                  (c.pal==triomf && cg.pal==triomf && c.num>cg.num)
+                )
+              }).length>0;
 
-      //determina si seria legal tirar una carta
-      function es_legal(carta){
-        return true;//debug
-        var triomf=partida.triomf.substring(0,2);
-        var basa=partida.basa;
-
-        //casos extrems que no cal mirar la carta
-        if(ma_actual.length==1 || basa.length==0){return true;}
-
-        //tradueix manilla i as per poder comparar números
-        if(carta.num==1) carta.num=13;
-        if(carta.num==9) carta.num=14;
-
-        //agafa el pal inicial
-        var pal_inicial=basa[0].pal;
-
-        if(carta.pal==pal_inicial){
-        }
-
-        //determina si falles del pal inicial (true false)
-        var falles = ma_actual.filter(c=>{return c.pal==pal_inicial}).length == 0;
-        console.log('falles '+falles);
-
-
-        //ARBRE DE DECISIÓ
-
-        //tens carta del pal inicial
-        if(!falles){
+              if(pots_matar){
+                //fallo, tinc triomf, cal matar i puc matar
+                return (
+                  //si la guanyadora no és triomf i la meva sí
+                  (carta.pal==triomf && cg.pal!=triomf) ||
+                  //o si la guanyadora és triomf i jo la tinc més alta
+                  (carta.pal==triomf && cg.pal==triomf && carta.num>cg.num)
+                )
+              }else{
+                //fallo, trinc triomf i no puc matar: qualsevol carta
+                return true;
+              }
+            }
+          }
         }
       }
-    })();
-    */
 
-    function es_legal(carta){
+      //no es pot arribar mai aquí
+      console.error("error normes obligar: apunta la basa");
       return true;
-    }
+    };
 
     //recorre totes les cartes de la ma
     for(var i=0;i<cartes.length;i++){
       var pal=cartes[i].getAttribute('pal');
       var num=parseInt(cartes[i].getAttribute('num'));
 
-      //treu borde a totes les cartes
-      cartes[i].style.border="none";
-
       //comprova si seria legal jugar la carta
-      if(!es_legal({num,pal})){continue;}
+      var jugada_legal=es_legal({num,pal});
+      //desfer canvis valor manilla i as
+      ma_actual.concat(partida.basa).forEach(c=>{
+        if(c.num==13) c.num=1;
+        if(c.num==14) c.num=9;
+      });
 
-      //posa borde a les permeses
-      cartes[i].style.borderBottom="3px solid orange";
+      //si no es legal STOP
+      if(!jugada_legal){continue;}
 
-      //posa click listener per jugar la carta
-      cartes[i].addEventListener('click',function listener(){
-        this.removeEventListener('click',listener);
-        //impedeix jugar al jugador no actiu
+      //la carta és legal: posa indicador
+      cartes[i].classList.add('legal');
+
+      //listener jugar carta
+      function listener_tirar(){
+        this.removeEventListener('click',listener_tirar);
+        //frena jugador no actiu
         if(partida.actiu!=socket.id){return;}
+        if(false==this.classList.contains('preseleccionada')){return;}
+
         //emet tirada
         var pal=this.getAttribute('pal');
-        var num=parseInt(this.getAttribute('num'));
+        var num=this.getAttribute('num');
+        num=parseInt(num);
         socket.emit('tirada',{partida_id:partida.creador,pal,num});
+      };
+
+      //afegeix listener per preseleccionar carta
+      cartes[i].addEventListener('click',function listener_preseleccio(){
+        this.removeEventListener('click',listener_preseleccio);
+        //frena jugador no actiu
+        if(partida.actiu!=socket.id){return;}
+
+        //treu preseleccionada a totes
+        var cartes_pre=document.querySelectorAll('#ma img.carta.preseleccionada');
+        for(var j=0;j<cartes_pre.length;j++){
+          cartes_pre[j].classList.remove('preseleccionada');
+          cartes_pre[j].removeEventListener('click',listener_tirar);
+          cartes_pre[j].addEventListener('click',listener_preseleccio);
+        }
+        //afegeix classe preseleccionada a la carta clicada
+        this.classList.add('preseleccionada');
+        //afegeix listener per jugar la carta preseleccionada
+        this.addEventListener('click',listener_tirar);
       });
     }
-
     //debug: tira automàticament carta random
-    if(debug){cartes[0].dispatchEvent(new CustomEvent('click'));}
+    //if(debug){cartes[0].dispatchEvent(new CustomEvent('click'));}
   }
 });
 
@@ -569,7 +738,7 @@ socket.on('anuncia-qui-canta',function(sock_id){
     ['oros','copes','espases','bastos','botifarra','delegar'].forEach(pal=>{
       var img=document.createElement('img');
       div.appendChild(img);
-      img.title=pal
+      img.title=pal;
 
       if(pal=='botifarra'){
         img.src="/img/botifarra.jpg";
@@ -579,10 +748,14 @@ socket.on('anuncia-qui-canta',function(sock_id){
         img.src="/img/cartes/"+pal.substring(0,2)+"01.jpg";
       }
 
+      //listener dir al servidor què cantes
       img.addEventListener('click',function(){
         socket.emit('triomf-triat',{creador:partida.creador,pal});
         div.parentNode.removeChild(div);
       });
+
+      //debug: canta oros sempre
+      if(debug && pal=='oros'){img.dispatchEvent(new CustomEvent('click'));}
     });
   }
 });
@@ -661,6 +834,12 @@ socket.on('canvi-nom',function(data){
   "</div>";
   //scroll al top
   xat.scrollTop=xat.scrollHeight;
+
+  //canvia el nom del tapet si s'escau
+  var div_jugador=document.querySelector('div.jugador[socket="'+data.id+'"]');
+  if(div_jugador){
+    div_jugador.firstChild.nodeValue=data.nou;
+  }
 });
 
 socket.on('typing',function(nick){
@@ -802,10 +981,11 @@ socket.on('refresca-partides',function(partides_arr){
 });
 
 socket.on('start-partida',function(sock_id){
-  echo("començant partida '"+sock_id+"'");
-
-  //reset al log
+  //reset log
   log.innerHTML='';
+
+  //log i status
+  echo("començant partida '"+sock_id+"'");
 
   //get objecte partida
   partida=getPartida(sock_id);

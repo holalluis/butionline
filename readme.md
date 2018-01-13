@@ -17,7 +17,7 @@ euros/any).
 La intenció és programar una botifarra sense cap tipus de restricció.
 
 Com que no tinc cap intenció de lucre amb aquest projecte i és per ús propi, no
-ofereixo cap garantia que el servidor funcioni bé les 24 hores del dia.
+ofereixo cap garantia que el servidor funcioni les 24 hores del dia.
 
 ## objectiu monetització: no
 ## status: en desenvolupament
