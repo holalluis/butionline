@@ -1,4 +1,6 @@
 # botifarra online
+## status: versió beta privada
+
 Joc de la botifarra online inspirat en el butinet.
 
 La motivació principal per crear aquesta versió alternativa és que volia
@@ -20,7 +22,6 @@ Com que no tinc cap intenció de lucre amb aquest projecte i és per ús propi, 
 ofereixo cap garantia que el servidor funcioni les 24 hores del dia.
 
 ## objectiu monetització: no
-## status: en desenvolupament
 ## implementat fent servir:
 - html + css + javascript (client)
 - node js + express (servidor)
