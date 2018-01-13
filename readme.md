@@ -22,8 +22,10 @@ Com que no tinc cap intenció de lucre amb aquest projecte i és per ús propi, 
 ofereixo cap garantia que el servidor funcioni les 24 hores del dia.
 
 ## objectiu monetització: no
+
 ## implementat fent servir:
-- html + css + javascript (client)
-- node js + express (servidor)
-- express
 - websockets (socket.io)
+- node.js + express (servidor)
+- javascript (client)
+- html + css (GUI)
+- vim + tmux (desenvolupament)
