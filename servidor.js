@@ -524,7 +524,7 @@ io.on('connection',function(sock){
       }
     });
 
-    //elimina partides on es el creador 
+    //elimina partides on es el creador
     partides=partides.filter(p=>{return p.creador!=sock.id});
 
     //deixa espai a les partides que s'havia unit
@@ -543,6 +543,10 @@ io.on('connection',function(sock){
     if(usuaris_filtrats.length){
       var antic=usuaris_filtrats[0].nom;
       var nou=nom_usuari;
+
+      //si antic==nou no facis res
+      if(antic==nou){return;}
+
       //canvia el nom
       usuaris_filtrats[0].nom=nom_usuari;
       //emet event canvi de nom

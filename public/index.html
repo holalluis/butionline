@@ -8,9 +8,15 @@
   <script src="libs/socket.io/2.0.4/socket.io.js"></script>
 </head><body onload="init()">
 
-<h3 style="margin:6px 0">Botifarra online <code>(v0.1)</code></h3>
+<!--titol + entrar al xat container-->
+<div>
 
-<!--entrar a la sala-->
+<!--titol-->
+<h3 id=titol>
+  Botifarra online <code>v0.1 (beta)</code>
+</h3>
+
+<!--entrar al xat container-->
 <div class=flex>
   <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=20 value='nai'>
   <button id=btn_entrar>entrar</button>
@@ -19,14 +25,14 @@
       /*NOM USUARI*/
       var nom_usuari=document.getElementById('nom_usuari');
 
-      //processa primer paràmetre GET com a nick, si n'hi ha
+      //processa paràmetre GET=nick (si n'hi ha)
       var GET1=window.location.search.substr(1).split('=')[1];
       if(GET1){
         nom_usuari.value=GET1;
         return;
       }
 
-      //si no GET processa cookie
+      //si no GET: processa cookie
       //comprova si usuari ja havia entrat abans per guardar el nom
       //get cookie (stackoverflow)
       function getCookie(cname){
@@ -41,33 +47,27 @@
         }
         return false;
       }
+
       var cookie_nom_usuari=getCookie('nom_usuari');
       if(cookie_nom_usuari){
         nom_usuari.value=cookie_nom_usuari;
         return;
       }
+
       //si no GET ni cookie escriu num random 1 a 1000
       nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);
     })();
   </script>
 </div>
+</div><hr>
 
-<hr>
-
+<!--main container-->
 <div id=main style=display:none>
 
-<!--usuaris+xat-->
-<div class=flex>
-  <!--llista usuaris xat-->
-  <div style="width:150px">
-    <p style="font-size:small">Usuaris online (<span id=comptador_usuaris>0</span>)</p>
-    <ul id=usuaris></ul>
-  </div>
-
-  <!--separador--><div class=separador></div>
-
+<!--usuaris + xat + partides-->
+<div class=flex style="margin-left:-8px;">
   <!--xat-->
-  <div>
+  <div style="padding-left:1px;">
     <p style="font-size:small">Xat general <em id=feedback></em></p>
     <div id=xat></div>
     <div id=xat_controls class=flex>
@@ -76,21 +76,29 @@
     </div>
   </div>
 
-  <!--separador--><div class=separador></div>
+  <!--partides + usuaris-->
+  <div class=flex style="padding-left:1px;height:220px">
 
-  <!--partides-->
-  <div>
-    <p style="font-size:small">
-      Partides (<span id=comptador_partides>0</span>)
+    <!--partides-->
+    <div>
+      <p style="font-size:small">
+        Partides (<span id=comptador_partides>0</span>)
+      </p>
+      <div id=partides></div>
       <button id=btn_crear_partida style=visibility:hidden>crear</button>
-    </p>
-    <div id=partides></div>
+    </div>
+
+    <!--usuaris-->
+    <div style="padding-left:1px;">
+      <p style="font-size:small">Usuaris online (<span id=comptador_usuaris>0</span>)</p>
+      <ul id=usuaris></ul>
+    </div>
   </div>
 </div>
 
-<hr style="margin-bottom:1px">
+<!--separador--><div style="margin-top:8px"></div>
 
-<!--botó veure tapet-->
+<!--botó veure tapet (ocult)-->
 <div>
   <button onclick="window.location='#tapet'" id=btn_veure_tapet style="display:none;padding:10px 15px;margin:5px 0">
     &darr;
@@ -98,131 +106,99 @@
 </div>
 
 <!--partida actual-->
-<div class=flex>
-  <!--css--><link rel=stylesheet href="tapet.css">
-  <!--tapet-->
-  <div id=tapet taula=1>
-    <!--lloc cartes-->
-    <div>
-      <div id=jugadorN class=jugador></div>
-      <div id=jugadorS class=jugador></div>
-      <div id=jugadorE class=jugador></div>
-      <div id=jugadorO class=jugador></div>
-    </div>
-
-    <!--status+triomf-->
-    <div id=status_partida>esperant nova partida</div>
-    <div id=triomf style="visibility:hidden">
-      <img src="img/ico_bo.jpg">
-    </div>
-
-    <!--ma-->
-    <div id=ma>
-      <!--provisional
-      <img src="/img/cartes/or09.jpg">
-      <img src="/img/cartes/or01.jpg">
-      <img src="/img/cartes/or12.jpg">
-      -->
-    </div>
-  </div>
-  <!--separador--><div class=separador></div>
-
-  <!--info+log-->
+<div class=flex style="margin-left:-8px;">
+  <!--tapet + info partida container-->
   <div>
+    <!--tapet-->
+    <!--css--><link rel=stylesheet href="tapet.css">
+    <div id=tapet>
+      <!--lloc cartes-->
+      <div>
+        <div id=jugadorN class=jugador></div>
+        <div id=jugadorS class=jugador></div>
+        <div id=jugadorE class=jugador></div>
+        <div id=jugadorO class=jugador></div>
+      </div>
+
+      <!--status + triomf-->
+      <div id=status_partida onclick="window.location='#tapet';return false;">esperant nova partida</div>
+      <div id=triomf style="visibility:hidden"></div>
+
+      <!--ma-->
+      <div id=ma></div>
+    </div>
+
     <!--info partida-->
-    <ul>
+    <ul id=info_partida>
       <li>Obligada/101
       <li id=tipus_partida>Partida NO contrada
-    </ul><hr>
-    <ul>
       <li>Equip 1: <span id=punts_e1>0</span> punts
       <li>Equip 2: <span id=punts_e2>0</span> punts
-    </ul><hr>
-
-    <!--log--><div id=log></div>
+    </ul>
   </div>
+
+  <!--log-->
+  <div id=log></div>
 </div>
 
-<hr style="margin-top:1px">
-
-<!--cache preload cartes-->
+<!--cache preload imatges-->
 <div style=display:none>
-  <img src="/img/cartes/or01.jpg"></img>
-  <img src="/img/cartes/or02.jpg"></img>
-  <img src="/img/cartes/or03.jpg"></img>
-  <img src="/img/cartes/or04.jpg"></img>
-  <img src="/img/cartes/or05.jpg"></img>
-  <img src="/img/cartes/or06.jpg"></img>
-  <img src="/img/cartes/or07.jpg"></img>
-  <img src="/img/cartes/or08.jpg"></img>
-  <img src="/img/cartes/or09.jpg"></img>
-  <img src="/img/cartes/or10.jpg"></img>
-  <img src="/img/cartes/or11.jpg"></img>
-  <img src="/img/cartes/or12.jpg"></img>
-  <img src="/img/cartes/co01.jpg"></img>
-  <img src="/img/cartes/co02.jpg"></img>
-  <img src="/img/cartes/co03.jpg"></img>
-  <img src="/img/cartes/co04.jpg"></img>
-  <img src="/img/cartes/co05.jpg"></img>
-  <img src="/img/cartes/co06.jpg"></img>
-  <img src="/img/cartes/co07.jpg"></img>
-  <img src="/img/cartes/co08.jpg"></img>
-  <img src="/img/cartes/co09.jpg"></img>
-  <img src="/img/cartes/co10.jpg"></img>
-  <img src="/img/cartes/co11.jpg"></img>
-  <img src="/img/cartes/co12.jpg"></img>
-  <img src="/img/cartes/es01.jpg"></img>
-  <img src="/img/cartes/es02.jpg"></img>
-  <img src="/img/cartes/es03.jpg"></img>
-  <img src="/img/cartes/es04.jpg"></img>
-  <img src="/img/cartes/es05.jpg"></img>
-  <img src="/img/cartes/es06.jpg"></img>
-  <img src="/img/cartes/es07.jpg"></img>
-  <img src="/img/cartes/es08.jpg"></img>
-  <img src="/img/cartes/es09.jpg"></img>
-  <img src="/img/cartes/es10.jpg"></img>
-  <img src="/img/cartes/es11.jpg"></img>
-  <img src="/img/cartes/es12.jpg"></img>
-  <img src="/img/cartes/ba01.jpg"></img>
-  <img src="/img/cartes/ba02.jpg"></img>
-  <img src="/img/cartes/ba03.jpg"></img>
-  <img src="/img/cartes/ba04.jpg"></img>
-  <img src="/img/cartes/ba05.jpg"></img>
-  <img src="/img/cartes/ba06.jpg"></img>
-  <img src="/img/cartes/ba07.jpg"></img>
-  <img src="/img/cartes/ba08.jpg"></img>
-  <img src="/img/cartes/ba09.jpg"></img>
-  <img src="/img/cartes/ba10.jpg"></img>
-  <img src="/img/cartes/ba11.jpg"></img>
-  <img src="/img/cartes/ba12.jpg"></img>
-</div>
-
-<!--per fer-->
-<div style="margin-top:10px">
-  <b>App en fase de proves!</b>
-  <p style="font-size:smaller"><em>Pots enviar idees/suggeriments/millores/errors trobats a: <a href="mailto:holalluis@gmail.com">holalluis@gmail.com</a>. Gràcies! </em></p>
-  <b>Tasques pendents programació:</b>
-  <p>Llista bugs (alta prioritat):</p>
-  <ol>
-    <li><small>~llista buida</small>
-  </ol>
-  <p>Llista coses noves (baixa prioritat):</p>
-  <ol>
-    <li>Poder triar punts partida (51, 101, 151) [fàcil].
-    <li>Poder triar obligat/lliure [difícil].
-    <li>Poder veure última basa [fàcil].
-    <li>Afegir emoticones al xat (francesc) [fàcil].
-    <li>Que el jugador sempre surti a baix (esteve) [difícil].
-    <li>Poder reanudar partides on algú marxa [difícil].
-    <li>Poder fer fora gent que no es comporta [fàcil].
-  </ol>
+  <img src="/img/cartes/or01.jpg">
+  <img src="/img/cartes/or02.jpg">
+  <img src="/img/cartes/or03.jpg">
+  <img src="/img/cartes/or04.jpg">
+  <img src="/img/cartes/or05.jpg">
+  <img src="/img/cartes/or06.jpg">
+  <img src="/img/cartes/or07.jpg">
+  <img src="/img/cartes/or08.jpg">
+  <img src="/img/cartes/or09.jpg">
+  <img src="/img/cartes/or10.jpg">
+  <img src="/img/cartes/or11.jpg">
+  <img src="/img/cartes/or12.jpg">
+  <img src="/img/cartes/co01.jpg">
+  <img src="/img/cartes/co02.jpg">
+  <img src="/img/cartes/co03.jpg">
+  <img src="/img/cartes/co04.jpg">
+  <img src="/img/cartes/co05.jpg">
+  <img src="/img/cartes/co06.jpg">
+  <img src="/img/cartes/co07.jpg">
+  <img src="/img/cartes/co08.jpg">
+  <img src="/img/cartes/co09.jpg">
+  <img src="/img/cartes/co10.jpg">
+  <img src="/img/cartes/co11.jpg">
+  <img src="/img/cartes/co12.jpg">
+  <img src="/img/cartes/es01.jpg">
+  <img src="/img/cartes/es02.jpg">
+  <img src="/img/cartes/es03.jpg">
+  <img src="/img/cartes/es04.jpg">
+  <img src="/img/cartes/es05.jpg">
+  <img src="/img/cartes/es06.jpg">
+  <img src="/img/cartes/es07.jpg">
+  <img src="/img/cartes/es08.jpg">
+  <img src="/img/cartes/es09.jpg">
+  <img src="/img/cartes/es10.jpg">
+  <img src="/img/cartes/es11.jpg">
+  <img src="/img/cartes/es12.jpg">
+  <img src="/img/cartes/ba01.jpg">
+  <img src="/img/cartes/ba02.jpg">
+  <img src="/img/cartes/ba03.jpg">
+  <img src="/img/cartes/ba04.jpg">
+  <img src="/img/cartes/ba05.jpg">
+  <img src="/img/cartes/ba06.jpg">
+  <img src="/img/cartes/ba07.jpg">
+  <img src="/img/cartes/ba08.jpg">
+  <img src="/img/cartes/ba09.jpg">
+  <img src="/img/cartes/ba10.jpg">
+  <img src="/img/cartes/ba11.jpg">
+  <img src="/img/cartes/ba12.jpg">
 </div>
 
 <!--fi pagina-->
 <footer>
   Botifarra online |
   Creat per Lluís Mª Bosch (2018) |
-  <a href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a>
+  <a href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a> |
+  <a href="pendent.html">Tasques pendents</a>
 </footer>
 
 <!--client app-->

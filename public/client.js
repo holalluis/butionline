@@ -811,7 +811,7 @@ socket.on('repartir',function(cartes){
 
 socket.on('entrar',function(data){
   xat.innerHTML+="<div style=color:green title='"+data.id+"'>"+
-    "["+data.data+"] "+
+    "["+data.data.substring(0,5)+"] "+
     "<em>"+data.nom+" ha entrat al xat</em>"+
   "</div>";
   //scroll al top
@@ -820,7 +820,7 @@ socket.on('entrar',function(data){
 
 socket.on('sortir',function(data){
   xat.innerHTML+="<div style=color:red title='"+data.id+"'>"+
-    "["+data.data+"] "+
+    "["+data.data.substring(0,5)+"] "+
     "<em>"+data.nom+" ha sortit del xat</em>"+
   "</div>";
   //scroll al top
@@ -829,7 +829,7 @@ socket.on('sortir',function(data){
 
 socket.on('canvi-nom',function(data){
   xat.innerHTML+="<div style=color:green title='"+data.id+"'>"+
-    "["+data.data+"] "+
+    "["+data.data.substring(0,5)+"] "+
     "<em>"+data.antic+" ara és "+data.nou+"</em>"+
   "</div>";
   //scroll al top
@@ -853,7 +853,7 @@ socket.on('typing',function(nick){
 socket.on('xat',function(data){
   feedback.innerHTML="";
   xat.innerHTML+="<div>"+
-    "["+data.data+"] "+
+    "["+data.data.substring(0,5)+"] "+
     "<strong>"+data.nick+"</strong>: "+
     "<span>"+data.missatge+"</span>"+
   "</div>";
