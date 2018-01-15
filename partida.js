@@ -25,6 +25,7 @@ function Partida(creador){
 
   //variables de ronda
   this.canta=null;         //socket id del jugador que canta
+  this.delegat=false;      //cantar delegat a company o no
   this.triomf=null;        //oros, copes, espases, bastos, botifarra, delegar
   this.recontrar=null;     //true, false
   this.santvicenç=null;    //true, false

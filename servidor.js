@@ -110,15 +110,26 @@ io.on('connection',function(sock){
   //jugador intenta una tirada
   sock.on('tirada',function(data){
     utils.log('carta jugada (P '+data.partida_id+") (J "+sock.id+")");
-
-    var p=utils.getPartida(partides,data.partida_id);
-    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
     var pal=data.pal;
     var num=data.num;
 
+    //get partida
+    var p=utils.getPartida(partides,data.partida_id);
+    if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
+
+    //si la basa ja té alguna carta amb id del jugador rebutja-la
+    if(p.basa.filter(c=>{return c.jugador_id==sock.id}).length>0){
+      utils.log('tirada rebutjada -- el jugador ja ha tirat');
+      return;
+    }
+
+    //nou objecte tirada {id,pal,num}
     var tirada={jugador_id:sock.id,pal,num};
 
-    //anuncia la jugada
+    //tirada acceptada
+    p.basa.push(tirada);
+
+    //anuncia la carta tirada al client
     //nota: la legalitat es comprova al client no al servidor
     p.getJugadors().forEach(sock_id=>{
       if(sock_id==sock.id){
@@ -128,10 +139,7 @@ io.on('connection',function(sock){
       }
     });
 
-    //tirada acceptada
-    p.basa.push(tirada);
-
-    //si la basa està plena
+    //si la basa està plena: recollir
     if(p.basa.length==4){
       //emet event recollir basa
       p.getJugadors().forEach(sock_id=>{
@@ -145,7 +153,7 @@ io.on('connection',function(sock){
       return;
     }
 
-    //següent tirada!
+    //següent tirada
     p.actiu=p.getNextJugador(sock.id);
     p.getJugadors().forEach(sock_id=>{
       //anuncia a cada jugador que ja es pot tirar
@@ -228,16 +236,17 @@ io.on('connection',function(sock){
   sock.on('triomf-triat',function(data){
     var creador=data.creador;
     var pal=data.pal;
+
     //get partida
     var p=utils.getPartida(partides,creador);
     if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
-    utils.log("pal triat: "+pal+" ("+creador+")");
     //seteja pal triat a la partida
+    utils.log("pal triat: "+pal+" ("+creador+")");
     p.triomf=pal;
+
     //anuncia als jugadors el pal triat
     p.getJugadors().forEach(sock_id=>{
-      //reparteix a cada socket PER SEPARAT
       if(sock_id==sock.id){
         sock.emit('triomf-triat',pal);
       }else{

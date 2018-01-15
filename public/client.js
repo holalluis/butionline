@@ -82,6 +82,16 @@ var socket=io.connect('http://192.168.001.130:4000'); //local
     return false;
   }
 
+  //get company
+  function getCompany(sock_id){
+    if     (sock_id==partida.equips[1].jugadorN) return partida.equips[1].jugadorS;
+    else if(sock_id==partida.equips[1].jugadorS) return partida.equips[1].jugadorN;
+    else if(sock_id==partida.equips[2].jugadorE) return partida.equips[2].jugadorO;
+    else if(sock_id==partida.equips[2].jugadorO) return partida.equips[2].jugadorE;
+    else
+      return false;
+  }
+
   //get partida (event 'start-partida')
   function getPartida(sock_id){
     var filtrat=partides_actuals.filter(p=>{return p.creador==sock_id});
@@ -293,6 +303,7 @@ socket.on('ronda-acabada',function(punts){
     echo('<big><b>partida acabada ('+p1+' a '+p2+')</b></big>');
 
     //reset per poder recomençar partida
+    partida.delegat=false;
     partida.en_marxa=false;
     partida.equips[1].punts=0;
     partida.equips[2].punts=0;
@@ -349,15 +360,17 @@ socket.on('tirada-legal',function(data){
 
   //fes apareixer carta al tapet
   var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
-  carta.innerHTML+="<img src='/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg'>";
+  if(carta) carta.innerHTML+="<img src='/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg'>";
 
   //afegeix carta a basa
   partida.basa.push({pal,num});
 
-  //desapareix carta de la ma
+  //treu carta de la ma
   if(id==socket.id){
     var carta=document.querySelector('#ma img.carta[pal='+pal+'][num="'+num+'"]');
-    carta.parentNode.removeChild(carta);
+
+    //elimina la carta
+    if(carta) carta.parentNode.removeChild(carta);
 
     //deixa de ser jugador actiu
     partida.actiu=null;
@@ -376,9 +389,9 @@ socket.on('esperant-tirada',function(jugador_id){
   //get nick jugador actiu
   var nick=getUsername(jugador_id);
   if(socket.id==jugador_id){
-    echo("ÉS EL TEU TORN! Fes click a una carta");
+    echo("ÉS EL TEU TORN! Juga una carta (click)");
 
-    //crea mini animació per cridar atenció
+    //mini animació per cridar atenció
     status_partida.style.transition='background 1s';
     status_partida.style.background='yellow';
     setTimeout(function(){status_partida.style.background='lightgreen';},1000);
@@ -394,7 +407,7 @@ socket.on('esperant-tirada',function(jugador_id){
 
   //posa emfasi al nou jugador actiu
   var carta=document.querySelector("#tapet div.jugador[socket='"+jugador_id+"']");
-  carta.classList.add('actiu');
+  if(carta) carta.classList.add('actiu');
 
   //gestiona els listeners del clic per les cartes de la mà
   var cartes=document.querySelectorAll('#ma img.carta');
@@ -647,8 +660,11 @@ socket.on('esperant-tirada',function(jugador_id){
       //listener jugar carta
       function listener_tirar(){
         this.removeEventListener('click',listener_tirar);
+
         //frena jugador no actiu
         if(partida.actiu!=socket.id){return;}
+
+        //només pots tirar cartes no preseleccionades
         if(false==this.classList.contains('preseleccionada')){return;}
 
         //emet tirada
@@ -661,20 +677,25 @@ socket.on('esperant-tirada',function(jugador_id){
       //afegeix listener per preseleccionar carta
       cartes[i].addEventListener('click',function listener_preseleccio(){
         this.removeEventListener('click',listener_preseleccio);
+
         //frena jugador no actiu
         if(partida.actiu!=socket.id){return;}
 
+        //listener per jugar carta preseleccionada
+        this.addEventListener('click',listener_tirar);
+
         //treu preseleccionada a totes
-        var cartes_pre=document.querySelectorAll('#ma img.carta.preseleccionada');
-        for(var j=0;j<cartes_pre.length;j++){
-          cartes_pre[j].classList.remove('preseleccionada');
-          cartes_pre[j].removeEventListener('click',listener_tirar);
-          cartes_pre[j].addEventListener('click',listener_preseleccio);
-        }
+        (function(){
+          var cartes_pre=document.querySelectorAll('#ma img.carta.preseleccionada');
+          for(var j=0;j<cartes_pre.length;j++){
+            cartes_pre[j].classList.remove('preseleccionada');
+            cartes_pre[j].removeEventListener('click',listener_tirar);
+            cartes_pre[j].addEventListener('click',listener_preseleccio);
+          }
+        })();
+
         //afegeix classe preseleccionada a la carta clicada
         this.classList.add('preseleccionada');
-        //afegeix listener per jugar la carta preseleccionada
-        this.addEventListener('click',listener_tirar);
       });
     }
     //debug: tira automàticament carta random
@@ -710,12 +731,14 @@ socket.on('triomf-triat',function(pal){
   //missatge esperant delegat
   if(pal=="delegar"){
     echo("s'ha delegat. Esperant company");
+    partida.delegat=true;
     return;
   }
 
   //mostra pal triat
   partida.triomf=pal;
-  echo(getUsername(partida.canta)+' ha cantat '+pal+'. Esperant si es contra');
+  var cantant = partida.delegat ? getUsername(getCompany(partida.canta))+" (DELEGAT)" : getUsername(partida.canta);
+  echo(cantant+' ha cantat '+pal+'. Esperant si es contra');
 
   //posa icona pal triat a element triomf
   triomf.innerHTML="<img src='img/ico_"+pal.substring(0,2)+".jpg'>";
