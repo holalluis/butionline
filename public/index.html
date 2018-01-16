@@ -61,6 +61,12 @@
 </div>
 </div><hr>
 
+<!--indicador loading-->
+<div id=ico_loading style="text-align:center">
+  <img src="/img/loading.gif" style="display:block;margin:auto;">
+  Carregant app...
+</div>
+
 <!--main container-->
 <div id=main style=display:none>
 
@@ -77,11 +83,10 @@
   </div>
 
   <!--partides + usuaris-->
-  <div class=flex style="padding-left:1px;height:220px">
-
+  <div class=flex>
     <!--partides-->
-    <div>
-      <p style="font-size:small">
+    <div style="padding-left:1px;">
+      <p style="font-size:small;">
         Partides (<span id=comptador_partides>0</span>)
       </p>
       <div id=partides></div>
@@ -97,13 +102,6 @@
 </div>
 
 <!--separador--><div style="margin-top:8px"></div>
-
-<!--botó veure tapet (ocult)-->
-<div>
-  <button onclick="window.location='#tapet'" id=btn_veure_tapet style="display:none;padding:10px 15px;margin:5px 0">
-    &darr;
-  </button>
-</div>
 
 <!--partida actual-->
 <div class=flex style="margin-left:-8px;">
@@ -141,7 +139,7 @@
   <div id=log></div>
 </div>
 
-<!--cache preload imatges-->
+<!--cache preload cartes-->
 <div style=display:none>
   <img src="/img/cartes/or01.jpg">
   <img src="/img/cartes/or02.jpg">

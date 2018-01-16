@@ -18,6 +18,7 @@ var socket=io.connect('http://192.168.001.130:4000'); //local
 
 
 /* DOM handlers (ordenat per seccions) */
+  var ico_loading=document.getElementById('ico_loading');
   //entrar
   var nom_usuari=document.getElementById('nom_usuari');
   var btn_entrar=document.getElementById('btn_entrar');
@@ -35,7 +36,6 @@ var socket=io.connect('http://192.168.001.130:4000'); //local
   var btn_crear_partida=document.getElementById('btn_crear_partida');
   var partides=document.getElementById('partides');
   //tapet
-  var btn_veure_tapet=document.getElementById('btn_veure_tapet');
   var tapet=document.getElementById('tapet');
   var jugadorN=document.getElementById('jugadorN');
   var jugadorS=document.getElementById('jugadorS');
@@ -63,6 +63,9 @@ var socket=io.connect('http://192.168.001.130:4000'); //local
         history.scrollRestoration='manual';
       }
     }
+    //amaga indicador loading
+    ico_loading.parentNode.removeChild(ico_loading);
+    //focus a canviar nom usuari
     nom_usuari.select();
   }
 
@@ -952,7 +955,7 @@ socket.on('refresca-partides',function(partides_arr){
           div_partida.appendChild(btn);
           btn.innerHTML='començar';
           btn.classList.add('btn_start');
-          btn.setAttribute('onclick','socket.emit("start-partida");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
+          btn.setAttribute('onclick','socket.emit("start-partida");if(debug){status_partida.onclick();}'); //no sé pq no funciona addEventListener
           btn.style.background='lightgreen';
         }
       }
@@ -962,7 +965,7 @@ socket.on('refresca-partides',function(partides_arr){
       div_partida.appendChild(btn);
       btn.classList.add('btn_join');
       btn.innerHTML='unir-se';
-      btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){btn_veure_tapet.onclick();}'); //no sé pq no funciona addEventListener
+      btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){status_partida.onclick();}'); //no sé pq no funciona addEventListener
     }
 
     //llista jugadors partida i posa botó per sortir partida

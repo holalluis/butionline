@@ -1,9 +1,9 @@
 #tapet {
   background:green;
   position:relative;
+  user-select:none;
   width:615px;
   height:361px;
-  user-select:none;
 }
 
 /*jugador*/
