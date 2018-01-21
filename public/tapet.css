@@ -4,6 +4,7 @@
   user-select:none;
   width:615px;
   height:361px;
+  margin-right:1px;
 }
 
 /*jugador*/
@@ -132,6 +133,6 @@
   height:351px;
   overflow-y:auto;
   font-size:smaller;
-  width:614px;
+  width:307px;
   font-family:monospace;
 }

@@ -2,14 +2,19 @@
   <meta charset="utf8">
   <title>Botifarra</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-  <link href="css.css" rel="stylesheet">
   <link rel="icon" href="img/favicon.png" type="image/x-icon">
+
+  <!--CSS-->
+  <link rel=stylesheet href="css.css">
+  <link rel=stylesheet href="tapet.css">
+  <link rel=stylesheet href="responsive.css">
+
   <!--client socket-->
   <script src="libs/socket.io/2.0.4/socket.io.js"></script>
 </head><body onload="init()">
 
 <!--titol + entrar al xat container-->
-<div>
+<div style=padding-left:8px>
 
 <!--titol-->
 <h3 id=titol>
@@ -59,6 +64,7 @@
     })();
   </script>
 </div>
+
 </div><hr>
 
 <!--indicador loading-->
@@ -71,9 +77,9 @@
 <div id=main style=display:none>
 
 <!--usuaris + xat + partides-->
-<div class=flex style="margin-left:-8px;">
+<div id=top_container class=flex style="justify-content:center">
   <!--xat-->
-  <div style="padding-left:1px;">
+  <div id=xat_container style="padding-left:1px;">
     <p style="font-size:small">Xat general <em id=feedback></em></p>
     <div id=xat></div>
     <div id=xat_controls class=flex>
@@ -83,9 +89,9 @@
   </div>
 
   <!--partides + usuaris-->
-  <div class=flex>
+  <div id=partides_usuaris_container class=flex>
     <!--partides-->
-    <div style="padding-left:1px;">
+    <div id=partides_container style="padding-left:1px;">
       <p style="font-size:small;">
         Partides (<span id=comptador_partides>0</span>)
       </p>
@@ -94,7 +100,7 @@
     </div>
 
     <!--usuaris-->
-    <div style="padding-left:1px;">
+    <div id=usuaris_container style="padding-left:1px;">
       <p style="font-size:small">Usuaris online (<span id=comptador_usuaris>0</span>)</p>
       <ul id=usuaris></ul>
     </div>
@@ -104,11 +110,10 @@
 <!--separador--><div style="margin-top:8px"></div>
 
 <!--partida actual-->
-<div class=flex style="margin-left:-8px;">
+<div id=partida_container class=flex style="justify-content:center">
   <!--tapet + info partida container-->
-  <div>
+  <div id=tapet_container>
     <!--tapet-->
-    <!--css--><link rel=stylesheet href="tapet.css">
     <div id=tapet>
       <!--lloc cartes-->
       <div>

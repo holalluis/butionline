@@ -29,3 +29,8 @@ ofereixo cap garantia que el servidor funcioni les 24 hores del dia.
 - javascript (client)
 - html + css (GUI)
 - vim + tmux (desenvolupament)
+
+## apps similars
+- Butinet (windows i web)
+- Buticard (android)
+- Buticat (android)
