@@ -55,7 +55,7 @@
       }
 
       //si no GET ni cookie escriu num random 1 a 1000
-      nom_usuari.value+="_"+(Math.floor(Math.random()*1000)+1);
+      nom_usuari.value="nai_"+(Math.floor(Math.random()*1000)+1);
     })();
   </script>
 </div>
@@ -121,6 +121,11 @@
       <!--status + triomf-->
       <div id=status_partida onclick="window.location='#tapet';return false;">esperant nova partida</div>
       <div id=triomf style="visibility:hidden"></div>
+
+      <!--boto veure ultima basa-->
+      <div id=veure_ultima_basa onclick="veure_ultima_basa()" style="visibility:hidden">
+        <img src="/img/ico_ultima_basa.jpg">
+      </div>
 
       <!--ma-->
       <div id=ma></div>
@@ -193,7 +198,7 @@
 
 <!--fi pagina-->
 <footer>
-  Botifarra online |
+  <a target=_blank href="https://github.com/holalluis/butifarra/">Botifarra online</a> |
   Creat per Lluís Mª Bosch (2018) |
   <a target=_blank href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a> |
   <a target=_blank href="pendent.html">Tasques pendents</a>

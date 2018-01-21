@@ -10,6 +10,7 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 /* Variables globals */
   var timeout_typing_event=false; //per event typing
+  var timeout_recollir_event=false; //per recollir basa
   var usuari=socket.id; //nom usuari valor inicial
   var usuaris_actuals=[];
   var partida=null;
@@ -119,6 +120,49 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
     }
   }
 
+  function veure_ultima_basa(){
+    if(!partida){return;}
+    if(partida.bases.length==0){return;}
+
+    var ultima=partida.bases[partida.bases.length-1];
+
+    //menu veure basa
+    var div=document.createElement('div');
+    tapet.appendChild(div);
+    div.classList.add('menu-cantar');
+    div.innerHTML="<h5>Última basa</h5>";
+    //imatges cartes
+    ultima.forEach(c=>{
+      var img=document.createElement('img');
+      img.src="/img/cartes/"+c.pal+(c.num<10?"0"+c.num:c.num)+".jpg";
+      div.appendChild(img);
+    });
+    //boto ok
+    var btn=document.createElement('button');
+    div.appendChild(btn);
+    btn.style.display='block';
+    btn.style.margin='auto';
+    btn.innerHTML="ok";
+    btn.addEventListener('click',function(){
+      div.parentNode.removeChild(div);
+    });
+  }
+
+  //NOTIFICACIONS
+  var notif_pendent=false;
+  function crea_notificacio(){
+    if(notif_pendent==false){
+      document.title="(1) "+document.title;
+    }
+    notif_pendent=true;
+  }
+  function esborra_notificacio(){
+    if(notif_pendent){
+      document.title=document.title.substring(4);
+    }
+    notif_pendent=false;
+  }
+
 
 /* DOM events */
   //btn crear partida
@@ -146,6 +190,11 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
     //canvia el <title></title>
     document.title="Botifarra - "+usuari;
+
+    //si hi havia notif pendent posa-la un altre cop
+    if(notif_pendent){
+      document.title="(1) "+document.title;
+    }
 
     //fes visible la pàgina
     document.getElementById('main').style.display='block';
@@ -189,11 +238,14 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 /* Escolta events socket emesos pel servidor */
 socket.on('partida-abandonada',function(){
-  //un jugador ha abandonat la partida
-  partida=null;
 
   //1. missatge partida abandonada
-  echo('un jugador ha abandonat la partida :(');
+  if(partida && partida.en_marxa){
+    echo('un jugador ha abandonat la partida :(');
+  }
+
+  //esborra partida
+  partida=null;
 
   //2. esborra menus cantar/contrar
   var menus=document.querySelectorAll('div.menu-cantar');
@@ -229,6 +281,7 @@ socket.on('esperant-santvicenç',function(){
   tapet.appendChild(div);
   div.classList.add('menu-cantar');
   div.innerHTML="<h5>Els rivals han recontrat. Vols fer Sant Vicenç (x8)?</h5>";
+  crea_notificacio();
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
@@ -240,10 +293,12 @@ socket.on('esperant-santvicenç',function(){
   btn_y.addEventListener('click',function(){
     socket.emit('santvicenç',{partida_id:partida.creador,santvicenç:true});
     div.parentNode.removeChild(div);
+    esborra_notificacio();
   });
   btn_n.addEventListener('click',function(){
     socket.emit('santvicenç',{partida_id:partida.creador,santvicenç:false});
     div.parentNode.removeChild(div);
+    esborra_notificacio();
   });
 });
 
@@ -253,6 +308,7 @@ socket.on('esperant-recontro',function(){
   tapet.appendChild(div);
   div.classList.add('menu-cantar');
   div.innerHTML="<h5>Els rivals han contrat. Vols recontrar (x4)?</h5>";
+  crea_notificacio();
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
@@ -264,10 +320,12 @@ socket.on('esperant-recontro',function(){
   btn_y.addEventListener('click',function(){
     socket.emit('recontrar',{partida_id:partida.creador,recontrar:true});
     div.parentNode.removeChild(div);
+    esborra_notificacio();
   });
   btn_n.addEventListener('click',function(){
     socket.emit('recontrar',{partida_id:partida.creador,recontrar:false});
     div.parentNode.removeChild(div);
+    esborra_notificacio();
   });
 });
 
@@ -277,6 +335,7 @@ socket.on('esperant-contro',function(){
   tapet.appendChild(div);
   div.classList.add('menu-cantar');
   div.innerHTML="<h5>Han cantat "+partida.triomf+". Vols contrar (x2)?</h5>";
+  crea_notificacio();
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
@@ -288,10 +347,12 @@ socket.on('esperant-contro',function(){
   btn_y.addEventListener('click',function(){
     socket.emit('contrar',{partida_id:partida.creador,contrar:true});
     div.parentNode.removeChild(div);
+    esborra_notificacio();
   });
   btn_n.addEventListener('click',function(){
     socket.emit('contrar',{partida_id:partida.creador,contrar:false});
     div.parentNode.removeChild(div);
+    esborra_notificacio();
   });
 
   //debug: click automàtic a no contrar
@@ -308,6 +369,7 @@ socket.on('ronda-acabada',function(punts){
   //update objecte partida
   partida.equips[1].punts+=e1;
   partida.equips[2].punts+=e2;
+  partida.bases=[];
 
   //update view
   punts_e1.innerHTML=partida.equips[1].punts;
@@ -346,9 +408,17 @@ socket.on('ronda-acabada',function(punts){
 });
 
 socket.on('recollir-basa',function(){
-  echo('recull la basa fent click al tapet');
+  //recollir basa automàtic en x segons
+  var segons_espera=5;
+
+  echo('recull la basa fent click al tapet ('+segons_espera+'s)');
+  crea_notificacio();
+
+  //listener click tapet recollir
   tapet.addEventListener('click',function recollir(){
     this.removeEventListener('click',recollir);
+    clearTimeout(timeout_recollir_event);
+
     var cartes=document.querySelectorAll('#tapet div.jugador img');
     for(var i=0;i<cartes.length;i++){
       var c=cartes[i];
@@ -356,24 +426,36 @@ socket.on('recollir-basa',function(){
     }
     echo('esperant que tothom reculli la basa');
     socket.emit('basa-recollida',partida.creador);
+    esborra_notificacio();
   });
 
-  //debug: recollir basa automàtic
-  if(debug){
-    tapet.dispatchEvent(new CustomEvent('click'));}
+  //timeout: recollir basa automàtic en x segons
+  timeout_recollir_event=setTimeout(function(){
+    tapet.dispatchEvent(new CustomEvent('click'));
+  },segons_espera*1000);
 
   //treu ressaltat jugador actiu
   var actiu=document.querySelector('div.jugador.actiu');
   if(actiu){actiu.classList.remove('actiu');}
 
+  //guarda la basa
+  partida.bases.push(partida.basa);
+
   //buida la basa
   partida.basa=[];
+
+  //debug: recollir basa automàtic
+  if(debug){
+    tapet.dispatchEvent(new CustomEvent('click'));
+  }
 });
 
 socket.on('tirada-legal',function(data){
   var id=data.jugador_id;
   var pal=data.pal;
   var num=data.num;
+
+  echo(getUsername(id)+" juga "+num+"-"+pal);
 
   //fes apareixer carta al tapet
   var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
@@ -407,6 +489,7 @@ socket.on('esperant-tirada',function(jugador_id){
   var nick=getUsername(jugador_id);
   if(socket.id==jugador_id){
     echo("ÉS EL TEU TORN! Juga una carta (click)");
+    crea_notificacio();
 
     //mini animació per cridar atenció
     status_partida.style.transition='background 1s';
@@ -689,6 +772,7 @@ socket.on('esperant-tirada',function(jugador_id){
         var num=this.getAttribute('num');
         num=parseInt(num);
         socket.emit('tirada',{partida_id:partida.creador,pal,num});
+        esborra_notificacio();
       };
 
       //afegeix listener per preseleccionar carta
@@ -726,6 +810,7 @@ socket.on('delegar',function(){
   tapet.appendChild(div);
   div.classList.add('menu-cantar');
   div.innerHTML="<h5>T'han delegat. Selecciona triomf (click)</h5>";
+  crea_notificacio();
 
   //afegeix imatges asos de cada pal i buti
   ['oros','copes','espases','bastos','botifarra'].forEach(pal=>{
@@ -740,6 +825,7 @@ socket.on('delegar',function(){
     img.addEventListener('click',function(){
       socket.emit('triomf-triat',{creador:partida.creador,pal});
       div.parentNode.removeChild(div);
+      esborra_notificacio();
     });
   });
 });
@@ -760,6 +846,9 @@ socket.on('triomf-triat',function(pal){
   //posa icona pal triat a element triomf
   triomf.innerHTML="<img src='img/ico_"+pal.substring(0,2)+".jpg'>";
   triomf.style.visibility='visible';
+
+  //visible boto veure_ultima_basa
+  document.getElementById('veure_ultima_basa').style.visibility='visible';
 });
 
 socket.on('anuncia-qui-canta',function(sock_id){
@@ -773,6 +862,7 @@ socket.on('anuncia-qui-canta',function(sock_id){
     tapet.appendChild(div);
     div.classList.add('menu-cantar');
     div.innerHTML="<h5>Selecciona triomf (click)</h5>";
+    crea_notificacio();
 
     //afegeix: imatges asos de cada pal, buti i delegar
     ['oros','copes','espases','bastos','botifarra','delegar'].forEach(pal=>{
@@ -792,6 +882,7 @@ socket.on('anuncia-qui-canta',function(sock_id){
       img.addEventListener('click',function(){
         socket.emit('triomf-triat',{creador:partida.creador,pal});
         div.parentNode.removeChild(div);
+        esborra_notificacio();
       });
 
       //debug: canta oros sempre
@@ -1034,6 +1125,9 @@ socket.on('start-partida',function(sock_id){
 
   //get objecte partida
   partida=getPartida(sock_id);
+
+  //inicia partida
+  partida.en_marxa=true;
 
   //creador demana al servidor iniciar ronda
   if(socket.id==partida.creador){

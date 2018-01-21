@@ -54,6 +54,13 @@
   right:1px;
 }
 
+/*triomf*/
+#tapet #veure_ultima_basa {
+  position:absolute;
+  top:236px;
+  left:1px;
+}
+
 /*ma*/
 #tapet #ma{
   border-top:1px solid lightgreen;
