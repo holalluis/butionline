@@ -4,9 +4,9 @@ var debug=false;
 
 /* New client socket
 var socket=io.connect('http://164.132.111.240:4000'); //servidor
-var socket=io.connect('http://127.000.000.001:4000'); //loopback 
-*/
 var socket=io.connect('http://192.168.001.130:4000'); //local
+*/
+var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 /* Variables globals */
   var timeout_typing_event=false; //per event typing
@@ -52,7 +52,7 @@ var socket=io.connect('http://192.168.001.130:4000'); //local
   var log=document.getElementById('log');
 
 
-/* Utils */
+/* utils */
   //fx <body onload=init()>
   function init(){
     if(debug){
@@ -103,6 +103,21 @@ var socket=io.connect('http://192.168.001.130:4000'); //local
     }
     return false;
   }
+
+  //check if sock_id forma part de la partida p
+  function isPart(p,sock_id){
+    if([
+      p.equips[1].jugadorN,
+      p.equips[1].jugadorS,
+      p.equips[2].jugadorE,
+      p.equips[2].jugadorO,
+      ].indexOf(sock_id)+1
+    ){
+      return true;
+    }else{
+      return false;
+    }
+  };
 
 
 /* DOM events */
@@ -900,53 +915,66 @@ socket.on('refresca-usuaris',function(usuaris_connectats){
 });
 
 socket.on('refresca-partides',function(partides_arr){
-  btn_crear_partida.style.visibility='visible';
-  comptador_partides.innerHTML=partides_arr.length;
+
+  //update array partides_actuals
   partides_actuals=partides_arr;
+
+  //actualitza comptador partides
+  comptador_partides.innerHTML=partides_arr.length;
   partides.innerHTML="";
   if(partides_arr.length==0){
     partides.innerHTML="<small><i style=color:#666>~no hi ha partides</i></small>";
   }
 
+  //recorre lees partides
   partides_arr.forEach((p,i)=>{
-    //crea div partida
+    //div partida
     var div_partida=document.createElement('div');
     partides.appendChild(div_partida);
     div_partida.style.fontSize='smaller';
     div_partida.innerHTML+="Partida "+(i+1);
     div_partida.innerHTML+=" (jugadors: "+p.jugadors+"/4) ";
 
-    //pinta de verd si hi ha lloc
+    //pinta verd si hi ha lloc (<4)
     if(p.jugadors<4){div_partida.style.color='green';}
 
-    //afegeix botó esborrar partida
-    if(p.creador==socket.id){
-      //amaga botons "join" i "create"
-      (function(){
-        var btns=document.querySelectorAll('button.btn_join');
-        for(var i=0;i<btns.length;i++){
-          btns[i].parentNode.removeChild(btns[i]);
+    //mira si el jugador sock.id està dins una partida
+    var esta_dins_una_partida=(function(){
+      for(var i=0; i<partides_actuals.length; i++){
+        if(isPart(partides_actuals[i],socket.id)){
+          return true;
         }
-        btn_crear_partida.style.visibility='hidden';
-      })();
+      }
+      return false;
+    })();
 
-      //botó esborrar
-      var btn=document.createElement('button');
-      div_partida.appendChild(btn);
-      btn.innerHTML='esborrar';
-      btn.setAttribute('onclick','socket.emit("esborrar-partida")'); //no sé pq no funciona addEventListener
+    //amaga o mostra el botó crear partida
+    if(esta_dins_una_partida){
+      btn_crear_partida.style.visibility='hidden';
+    }else{
+      btn_crear_partida.style.visibility='visible';
+    }
+
+    //si el client és el creador
+    if(p.creador==socket.id){
+      //afegeix botó esborrar partida
+      (function(){
+        var btn=document.createElement('button');
+        div_partida.appendChild(btn);
+        btn.innerHTML='esborrar';
+        //no sé pq no funciona addEventListener
+        btn.setAttribute('onclick','socket.emit("esborrar-partida")');
+      })();
 
       //afegeix botó començar
       if(p.jugadors==4){
         div_partida.innerHTML+=" ";
-
         /*
-        //(futur)
-        //crea select triar punts (51, 101, 151)
-        (function(){
-          var select=" <select id=select_punts><option>51<option selected>101<option>151</select> ";
-          div_partida.innerHTML+=select;
-        })();
+          //FUTUR: CREA SELECT TRIAR PUNTS (51, 101, 151)
+          (function(){
+            var select=" <select id=select_punts><option>51<option selected>101<option>151</select> ";
+            div_partida.innerHTML+=select;
+          })();
         */
 
         //crea btn començar
@@ -955,11 +983,12 @@ socket.on('refresca-partides',function(partides_arr){
           div_partida.appendChild(btn);
           btn.innerHTML='començar';
           btn.classList.add('btn_start');
-          btn.setAttribute('onclick','socket.emit("start-partida");if(debug){status_partida.onclick();}'); //no sé pq no funciona addEventListener
+          //no sé pq no funciona addEventListener
+          btn.setAttribute('onclick','socket.emit("start-partida");if(debug){status_partida.onclick();}');
           btn.style.background='lightgreen';
         }
       }
-    }else if(p.jugadors<4 && partida==null){
+    }else if(p.jugadors<4 && partida==null && esta_dins_una_partida==false){
       //afegeix botó unir-se
       var btn=document.createElement('button');
       div_partida.appendChild(btn);
@@ -977,26 +1006,18 @@ socket.on('refresca-partides',function(partides_arr){
         p.equips[2].jugadorO,
       ].forEach(id=>{
         var nick=getUsername(id); //pot ser socket id o "null"
-        if(nick){
-          var div_jugador=document.createElement('div');
-          div_partida.appendChild(div_jugador)
-          div_jugador.style.fontSize='smaller';
-          div_jugador.innerHTML="- "+nick+" ";
-          if(id==p.creador){div_jugador.innerHTML+="(creador) ";}
+        if(!nick){return;}
 
-          //afegeix botó "sortir de la partida"
-          if(id==socket.id && p.creador!=socket.id){
-            div_jugador.innerHTML+="<button onclick=socket.emit('exit-partida','"+p.creador+"')>sortir</button>";
+        //crea div jugador
+        var div_jugador=document.createElement('div');
+        div_partida.appendChild(div_jugador)
+        div_jugador.style.fontSize='smaller';
+        div_jugador.innerHTML="- "+nick+" ";
+        if(id==p.creador){div_jugador.innerHTML+="(creador) ";}
 
-            //també amaga botons "join" i "create"
-            (function(){
-              var btns=document.querySelectorAll('button.btn_join');
-              for(var i=0;i<btns.length;i++){
-                btns[i].parentNode.removeChild(btns[i]);
-              }
-              btn_crear_partida.style.visibility='hidden';
-            })();
-          }
+        //afegeix botó "sortir de la partida"
+        if(id==socket.id && p.creador!=socket.id){
+          div_jugador.innerHTML+="<button onclick=socket.emit('exit-partida','"+p.creador+"')>sortir</button>";
         }
       });
     })();
@@ -1004,6 +1025,7 @@ socket.on('refresca-partides',function(partides_arr){
     //mini detall estètic
     partides.innerHTML+='<hr>';
   });
+
 });
 
 socket.on('start-partida',function(sock_id){
