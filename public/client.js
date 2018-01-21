@@ -253,7 +253,7 @@ socket.on('partida-abandonada',function(){
     menus[i].parentNode.removeChild(menus[i]);}
 
   //3. esborra les cartes del tapet
-  var cartes=document.querySelectorAll('#tapet img');
+  var cartes=document.querySelectorAll('#tapet img.carta');
   for(var i=0;i<cartes.length;i++){
     cartes[i].parentNode.removeChild(cartes[i]);}
 
@@ -370,6 +370,7 @@ socket.on('ronda-acabada',function(punts){
   partida.equips[1].punts+=e1;
   partida.equips[2].punts+=e2;
   partida.bases=[];
+  partida.delegada=false;
 
   //update view
   punts_e1.innerHTML=partida.equips[1].punts;
