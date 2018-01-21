@@ -434,27 +434,24 @@ io.on('connection',function(sock){
 
   //remote user esborra partida
   sock.on('esborrar-partida',function(){
-    utils.log('creador vol esborrar partida ('+sock.id+')');
+    utils.log('creador vol esborrar partida (P '+sock.id+')');
 
     //get partida
     var p=utils.getPartida(partides,sock.id);
     if(!p){utils.log("partida "+partida_id+" desconnectada");return;}
 
     //emet event "partida-abandonada"
+    sock.emit('partida-abandonada');
     p.getJugadors().forEach(j_id=>{
-      if(j_id==sock.id){
-        sock.emit('partida-abandonada');
-      }else{
-        sock.broadcast.to(j_id).emit('partida-abandonada');
-      }
+      sock.broadcast.to(j_id).emit('partida-abandonada');
     });
 
     //esborra partides on p.creador == sock.id
     partides=partides.filter(p=>{return p.creador!=sock.id});
+    utils.log('partida esborrada (P '+sock.id+')');
 
     //emet la nova llista de partides
     io.sockets.emit('refresca-partides',partides);
-    utils.log('partida esborrada ('+sock.id+')');
   });
 
   //remote user joins partida "sock_id"

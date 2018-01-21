@@ -104,20 +104,20 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
     return false;
   }
 
-  //check if sock_id forma part de la partida p
+  //mira si sock_id forma part de la partida p
   function isPart(p,sock_id){
     if([
-      p.equips[1].jugadorN,
-      p.equips[1].jugadorS,
-      p.equips[2].jugadorE,
-      p.equips[2].jugadorO,
+        p.equips[1].jugadorN,
+        p.equips[1].jugadorS,
+        p.equips[2].jugadorE,
+        p.equips[2].jugadorO,
       ].indexOf(sock_id)+1
     ){
       return true;
     }else{
       return false;
     }
-  };
+  }
 
 
 /* DOM events */
@@ -189,14 +189,13 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 /* Escolta events socket emesos pel servidor */
 socket.on('partida-abandonada',function(){
-  //significa que un jugador ha abandonat la partida
+  //un jugador ha abandonat la partida
   partida=null;
-  partides_actuals=[];
 
   //1. missatge partida abandonada
   echo('un jugador ha abandonat la partida :(');
 
-  //2. esborra menus cantar/contrar si cal
+  //2. esborra menus cantar/contrar
   var menus=document.querySelectorAll('div.menu-cantar');
   for(var i=0;i<menus.length;i++){
     menus[i].parentNode.removeChild(menus[i]);}
@@ -915,7 +914,6 @@ socket.on('refresca-usuaris',function(usuaris_connectats){
 });
 
 socket.on('refresca-partides',function(partides_arr){
-
   //update array partides_actuals
   partides_actuals=partides_arr;
 
@@ -926,7 +924,24 @@ socket.on('refresca-partides',function(partides_arr){
     partides.innerHTML="<small><i style=color:#666>~no hi ha partides</i></small>";
   }
 
-  //recorre lees partides
+  //mira si el client està dins alguna una partida
+  var esta_dins_una_partida=(function(){
+    for(var i=0; i<partides_actuals.length; i++){
+      if(isPart(partides_actuals[i],socket.id)){
+        return true;
+      }
+    }
+    return false;
+  })();
+
+  //amaga o mostra el botó crear partida
+  if(esta_dins_una_partida){
+    btn_crear_partida.style.visibility='hidden';
+  }else{
+    btn_crear_partida.style.visibility='visible';
+  }
+
+  //recorre les partides
   partides_arr.forEach((p,i)=>{
     //div partida
     var div_partida=document.createElement('div');
@@ -937,23 +952,6 @@ socket.on('refresca-partides',function(partides_arr){
 
     //pinta verd si hi ha lloc (<4)
     if(p.jugadors<4){div_partida.style.color='green';}
-
-    //mira si el jugador sock.id està dins una partida
-    var esta_dins_una_partida=(function(){
-      for(var i=0; i<partides_actuals.length; i++){
-        if(isPart(partides_actuals[i],socket.id)){
-          return true;
-        }
-      }
-      return false;
-    })();
-
-    //amaga o mostra el botó crear partida
-    if(esta_dins_una_partida){
-      btn_crear_partida.style.visibility='hidden';
-    }else{
-      btn_crear_partida.style.visibility='visible';
-    }
 
     //si el client és el creador
     if(p.creador==socket.id){
@@ -1025,7 +1023,6 @@ socket.on('refresca-partides',function(partides_arr){
     //mini detall estètic
     partides.innerHTML+='<hr>';
   });
-
 });
 
 socket.on('start-partida',function(sock_id){
