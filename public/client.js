@@ -71,10 +71,15 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
   }
 
   //log partida + status
-  function echo(missatge){
-    log.innerHTML+="<div>-"+missatge+"</div>";
-    log.scrollTop=log.scrollHeight;
+  function echo(missatge,afegir_a_log){
+    afegir_a_log=afegir_a_log||false;
+    //status
     status_partida.innerHTML=missatge;
+    //log
+    if(afegir_a_log){
+      log.innerHTML+="<div>-"+missatge+"</div>";
+      log.scrollTop=log.scrollHeight;
+    }
   }
 
   //get nom usuari
@@ -290,7 +295,7 @@ var Sons={
 socket.on('partida-abandonada',function(){
   //1. missatge partida abandonada
   if(partida && partida.en_marxa){
-    echo('un jugador ha abandonat la partida :(');
+    echo('Un jugador ha abandonat la partida.',true);
   }
 
   //esborra partida
@@ -316,12 +321,15 @@ socket.on('partida-abandonada',function(){
 
 socket.on('anunci-multiplicador',function(m){
   partida.multiplicador=m;
+  var msg;
   switch(m){
-    case 1: tipus_partida.innerHTML="Partida NO contrada (x1)";break;
-    case 2: tipus_partida.innerHTML="Partida CONTRADA (x2)";break;
-    case 4: tipus_partida.innerHTML="Partida RECONTRADA (x4)";break;
-    case 8: tipus_partida.innerHTML="Partida SANT VICENÇ (x8)";break;
+    case 1: msg="Partida NO contrada (x1)"; break;
+    case 2: msg="Partida CONTRADA (x2)"; break;
+    case 4: msg="Partida RECONTRADA (x4)"; break;
+    case 8: msg="Partida SANT VICENÇ (x8)"; break;
   }
+  tipus_partida.innerHTML=msg;
+  echo(msg,true);
 });
 
 socket.on('esperant-santvicenç',function(){
@@ -422,7 +430,7 @@ socket.on('ronda-acabada',function(punts){
   var e2=punts.equip2;
 
   //echo fi ronda
-  echo("<b>fi ronda. E1: "+e1+" punts, E2: "+e2+" punts</b>");
+  echo("<b>fi ronda. E1: "+e1+" punts, E2: "+e2+" punts</b>",true);
 
   //update objecte partida
   partida.equips[1].punts+=e1;
@@ -438,7 +446,7 @@ socket.on('ronda-acabada',function(punts){
   if(partida.equips[1].punts>=partida.objectiu || partida.equips[2].punts>=partida.objectiu){
     var p1=partida.equips[1].punts;
     var p2=partida.equips[2].punts;
-    echo('<big><b>partida acabada ('+p1+' a '+p2+')</b></big>');
+    echo('<big><b>partida acabada ('+p1+' a '+p2+')</b></big>',true);
 
     //reset per poder recomençar partida
     partida.delegat=false;
@@ -470,7 +478,7 @@ socket.on('recollir-basa',function(){
   //recollir basa automàtic en x segons
   var segons_espera=5;
 
-  echo('recull la basa fent click al tapet ('+segons_espera+'s)');
+  echo('Recull la basa fent click al tapet ('+segons_espera+'s)');
   crea_notificacio();
 
   //listener click tapet recollir
@@ -483,7 +491,7 @@ socket.on('recollir-basa',function(){
       var c=cartes[i];
       c.parentNode.removeChild(c);
     }
-    echo('esperant que tothom reculli la basa');
+    echo('Esperant que tothom reculli la basa',true);
     socket.emit('basa-recollida',partida.creador);
     esborra_notificacio();
 
@@ -517,7 +525,7 @@ socket.on('tirada-legal',function(data){
   var pal=data.pal;
   var num=data.num;
 
-  echo(getUsername(id)+" juga "+num+"-"+pal);
+  echo(getUsername(id)+" ha jugat una carta",true);
 
   //fes apareixer carta al tapet
   var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
@@ -553,7 +561,7 @@ socket.on('esperant-tirada',function(jugador_id){
   //get nick jugador actiu
   var nick=getUsername(jugador_id);
   if(socket.id==jugador_id){
-    echo("ÉS EL TEU TORN! Juga una carta (click)");
+    echo("ÉS EL TEU TORN! Juga una carta");
     crea_notificacio();
 
     //reprodueix so
@@ -565,7 +573,7 @@ socket.on('esperant-tirada',function(jugador_id){
     setTimeout(function(){status_partida.style.background='lightgreen';},1000);
     //fi animació
   }else{
-    echo("esperant "+nick);
+    echo("Esperant "+nick);
   }
   //futur: posa un so per indicar que et toca
 
@@ -903,16 +911,17 @@ socket.on('delegar',function(){
 
 socket.on('triomf-triat',function(pal){
   //missatge esperant delegat
+  var nick_delegat=getUsername(getCompany(partida.canta));
   if(pal=="delegar"){
-    echo("s'ha delegat. Esperant company");
+    echo("S'ha delegat. Esperant que "+nick_delegat+" canti",true);
     partida.delegat=true;
     return;
   }
 
   //mostra pal triat
   partida.triomf=pal;
-  var cantant = partida.delegat ? getUsername(getCompany(partida.canta))+" (DELEGAT)" : getUsername(partida.canta);
-  echo(cantant+' ha cantat '+pal+'. Esperant si es contra');
+  var cantant = partida.delegat ? nick_delegat+" (DELEGAT)" : getUsername(partida.canta);
+  echo(cantant+' ha cantat '+pal+'. Esperant si es contra',true);
 
   //posa icona pal triat a element triomf
   triomf.innerHTML="<img src='img/ico_"+pal.substring(0,2)+".jpg'>";
@@ -924,8 +933,8 @@ socket.on('triomf-triat',function(pal){
 
 socket.on('anuncia-qui-canta',function(sock_id){
   partida.canta=sock_id;
-  var nick=getUsername(sock_id);
-  echo("esperant que "+nick+" canti");
+  var nick=getUsername(partida.canta);
+  echo("Esperant que "+nick+" canti");
 
   //crea menú triar pal
   if(sock_id==socket.id){
@@ -1201,7 +1210,7 @@ socket.on('start-partida',function(sock_id){
   log.innerHTML='';
 
   //log i status
-  echo("començant partida '"+sock_id+"'");
+  echo("Començant partida '"+sock_id+"'",true);
 
   //get objecte partida
   partida=getPartida(sock_id);
