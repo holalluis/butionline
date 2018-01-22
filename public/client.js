@@ -2,7 +2,7 @@
 var debug=true;
 var debug=false;
 
-/* New client socket
+/* Nou client socket
 var socket=io.connect('http://164.132.111.240:4000'); //servidor
 var socket=io.connect('http://192.168.001.130:4000'); //local
 */
@@ -148,7 +148,8 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
     });
   }
 
-  //NOTIFICACIONS
+
+/* Notificacions */
   var notif_pendent=false;
   function crea_notificacio(){
     if(notif_pendent==false){
@@ -164,11 +165,60 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
   }
 
 
+/* Sons */
+var Sons={
+  xat:function(){
+    var a=new Audio("snd/xat.mp3");
+    a.play();
+  },
+  xat_entra:function(){
+    var a=new Audio("snd/xat_entra.mp3");
+    a.play();
+  },
+  xat_surt:function(){
+    var a=new Audio("snd/xat_surt.mp3");
+    a.play();
+  },
+  crear_partida:function(){
+    var a=new Audio("snd/crear_partida.wav");
+    a.play();
+  },
+  join_partida:function(){
+    var a=new Audio("snd/join_partida.wav");
+    a.play();
+  },
+  start_partida:function(){
+    var a=new Audio("snd/start_partida.mp3");
+    a.play();
+  },
+  menu_contrar:function(){
+    var a=new Audio("snd/menu_contrar.mp3");
+    a.play();
+  },
+  et_toca:function(){
+    var a=new Audio("snd/et_toca.mp3");
+    a.play();
+  },
+  carta:function(){
+    var n=Math.floor(Math.random()*10)+1;
+    var a=new Audio("snd/carta"+n+".wav");
+    a.play();
+  },
+  recollir:function(){
+    var a=new Audio("snd/recollir.mp3");
+    a.play();
+  },
+};
+
+
 /* DOM events */
   //btn crear partida
   btn_crear_partida.addEventListener('click',function(){
     //emet event crear_partida
     socket.emit('crear-partida');
+
+    //reprodueix so
+    Sons.crear_partida();
   });
 
   //btn entrar onclick
@@ -238,7 +288,6 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 /* Escolta events socket emesos pel servidor */
 socket.on('partida-abandonada',function(){
-
   //1. missatge partida abandonada
   if(partida && partida.en_marxa){
     echo('un jugador ha abandonat la partida :(');
@@ -283,6 +332,9 @@ socket.on('esperant-santvicenç',function(){
   div.innerHTML="<h5>Els rivals han recontrat. Vols fer Sant Vicenç (x8)?</h5>";
   crea_notificacio();
 
+  //reprodueix so
+  Sons.menu_contrar();
+
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
   var btn_n=document.createElement('button');
@@ -310,6 +362,9 @@ socket.on('esperant-recontro',function(){
   div.innerHTML="<h5>Els rivals han contrat. Vols recontrar (x4)?</h5>";
   crea_notificacio();
 
+  //reprodueix so
+  Sons.menu_contrar();
+
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
   var btn_n=document.createElement('button');
@@ -336,6 +391,9 @@ socket.on('esperant-contro',function(){
   div.classList.add('menu-cantar');
   div.innerHTML="<h5>Han cantat "+partida.triomf+". Vols contrar (x2)?</h5>";
   crea_notificacio();
+
+  //reprodueix so
+  Sons.menu_contrar();
 
   //afegir botons "Sí" i "No"
   var btn_y=document.createElement('button');
@@ -428,6 +486,9 @@ socket.on('recollir-basa',function(){
     echo('esperant que tothom reculli la basa');
     socket.emit('basa-recollida',partida.creador);
     esborra_notificacio();
+
+    //reprodueix so
+    Sons.recollir();
   });
 
   //timeout: recollir basa automàtic en x segons
@@ -480,6 +541,9 @@ socket.on('tirada-legal',function(data){
       return c.pal!=pal || c.num!=num;
     });
   }
+
+  //reprodueix so
+  Sons.carta();
 });
 
 socket.on('esperant-tirada',function(jugador_id){
@@ -491,6 +555,9 @@ socket.on('esperant-tirada',function(jugador_id){
   if(socket.id==jugador_id){
     echo("ÉS EL TEU TORN! Juga una carta (click)");
     crea_notificacio();
+
+    //reprodueix so
+    Sons.et_toca();
 
     //mini animació per cridar atenció
     status_partida.style.transition='background 1s';
@@ -798,6 +865,9 @@ socket.on('esperant-tirada',function(jugador_id){
 
         //afegeix classe preseleccionada a la carta clicada
         this.classList.add('preseleccionada');
+
+        //reprodueix so
+        Sons.carta()
       });
     }
     //debug: tira automàticament carta random
@@ -948,6 +1018,9 @@ socket.on('entrar',function(data){
   "</div>";
   //scroll al top
   xat.scrollTop=xat.scrollHeight;
+
+  //reprodueix so
+  Sons.xat_entra();
 });
 
 socket.on('sortir',function(data){
@@ -957,6 +1030,9 @@ socket.on('sortir',function(data){
   "</div>";
   //scroll al top
   xat.scrollTop=xat.scrollHeight;
+
+  //reprodueix so
+  Sons.xat_surt();
 });
 
 socket.on('canvi-nom',function(data){
@@ -991,6 +1067,9 @@ socket.on('xat',function(data){
   "</div>";
   //scroll al top
   xat.scrollTop=xat.scrollHeight;
+
+  //reprodueix so
+  Sons.xat();
 });
 
 socket.on('refresca-usuaris',function(usuaris_connectats){
@@ -1084,7 +1163,7 @@ socket.on('refresca-partides',function(partides_arr){
       div_partida.appendChild(btn);
       btn.classList.add('btn_join');
       btn.innerHTML='unir-se';
-      btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){status_partida.onclick();}'); //no sé pq no funciona addEventListener
+      btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){status_partida.onclick();};Sons.join_partida()'); //no sé pq no funciona addEventListener
     }
 
     //llista jugadors partida i posa botó per sortir partida
@@ -1134,4 +1213,7 @@ socket.on('start-partida',function(sock_id){
   if(socket.id==partida.creador){
     socket.emit('start-ronda');
   }
+
+  //reprodueix so
+  Sons.start_partida();
 });
