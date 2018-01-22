@@ -1128,7 +1128,7 @@ socket.on('refresca-partides',function(partides_arr){
     partides.appendChild(div_partida);
     div_partida.style.fontSize='smaller';
     div_partida.innerHTML+="Partida "+(i+1);
-    div_partida.innerHTML+=" (jugadors: "+p.jugadors+"/4) ";
+    div_partida.innerHTML+=" ("+p.jugadors+"/4 jugadors) ";
 
     //pinta verd si hi ha lloc (<4)
     if(p.jugadors<4){div_partida.style.color='green';}
@@ -1210,7 +1210,7 @@ socket.on('start-partida',function(sock_id){
   log.innerHTML='';
 
   //log i status
-  echo("Començant partida '"+sock_id+"'",true);
+  echo("<b>Començant partida '"+sock_id+"'</b>",true);
 
   //get objecte partida
   partida=getPartida(sock_id);

@@ -74,7 +74,7 @@
     overflow-y:auto;
     padding-bottom:3px;
     height:167px;
-    width:373px;
+    width:549px;
   }
 
   #missatge{
@@ -90,6 +90,9 @@
     overflow-y:auto;
     height:170px;
     width:229px;
+  }
+  #btn_crear_partida {
+    background:lightgreen;
   }
   #usuaris{
     padding-left:2px;
