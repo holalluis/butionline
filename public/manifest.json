@@ -1,0 +1,16 @@
+{
+"lang":             "ca",
+"name":             "Botifarra online",
+"short_name":       "Butionline",
+"start_url":        ".",
+"display":          "standalone",
+"background_color": "#fff",
+"description":      "Joc de cartes de la Botifarra",
+"icons":[
+  {
+    "src":   "img/favicon.png",
+    "sizes": "128x128",
+    "type":  "image/png"
+  }
+]
+}

@@ -1,11 +1,13 @@
 //llibreries
 var express=require('express'); //js server
+var compression=require('compression'); //gzip
 var socket=require('socket.io'); //websockets
 var utils=require('./utils.js'); //(local) utils
 var Partida=require('./partida.js'); //(local) classe Partida
 
 //express setup
 var app=express();
+app.use(compression());
 var server=app.listen(4000,function(){
   console.log("escoltant peticions al port 4000");});
 

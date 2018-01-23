@@ -1,83 +1,332 @@
-<!doctype html><html><head>
+<!doctype html><html lang="ca"><head>
   <meta charset="utf8">
-  <title>Botifarra</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="icon" href="img/favicon.png" type="image/x-icon">
-
+  <link rel="manifest" href="manifest.json">
+  <title>Botifarra</title>
   <!--CSS-->
-  <link rel=stylesheet href="css.css">
-  <link rel=stylesheet href="tapet.css">
-  <link rel=stylesheet href="responsive.css">
+  <!--css important-->
+  <style>
+    body{
+      margin:0;
+      font-family:Charter,Helvetica;
+      overflow-y:scroll;
+    }
+    button{
+      outline:none;
+      border-width:1px;
+    }
+    hr{
+      margin-bottom:2px;
+      border:none;
+      border-bottom:1px solid #ccc;
+    }
+    input{
+      outline:none;
+      padding:4px;
+      border-width:1px;
+      border-right:none;
+    }
+    input:hover{
+      border-color:#ccc;
+    }
+    ul{
+      padding-left:0;
+      margin:0;
+      font-size:smaller;
+      list-style:none;
+    }
+    p{
+      margin:0.5em 0;
+    }
+    /*classes*/
+    .flex{
+      display:flex;
+      flex-wrap:wrap;
+    }
+    /*elements*/
+    h3#titol{
+      margin:6px 0;
+    }
+    #nom_usuari{
+      display:block;
+    }
+    #btn_entrar{
+      display:block;
+    }
+    #top_container{
+      margin-bottom:8px;
+      justify-content:center;
+    }
+    #xat{
+      box-shadow:inset 0 0 1px black;
+      background:#f5f5f5;
+      font-family:monospace;
+      overflow-y:auto;
+      padding-bottom:3px;
+      height:167px;
+      width:549px;
+    }
+    #missatge{
+      width:290px;
+      display:block;
+    }
+    #partida_container{
+      justify-content:center;
+    }
+    #partides{
+      background:#f5f5f5;
+      box-shadow:inset 0 0 1px black;
+      padding-left:1px;
+      padding-right:1px;
+      overflow-y:auto;
+      height:170px;
+      width:229px;
+    }
+    #btn_crear_partida {
+      background:lightgreen;
+    }
+    #usuaris{
+      padding-left:2px;
+      padding-right:1px;
+      background:#f5f5f5;
+      overflow-y:auto;
+      box-shadow:inset 0 0 1px black;
+      height:170px;
+      width:138px;
+    }
+    #partides hr{
+      margin-bottom:0px;
+    }
+    #btn_missatge{
+      display:block;
+    }
+    footer{
+      margin-top:8px;
+      padding:8px 0 0 8px;
+      height:100px;
+      background:linear-gradient(to top,white,black);
+      color:grey;
+      font-family:monospace;
+    }
+    footer a {
+      color:grey;
+    }
 
-  <!--client socket-->
-  <script src="libs/socket.io/2.0.4/socket.io.js"></script>
+    /*RESPONSIVE*/
+    @media only screen and (max-width:768px){
+      #top_container,
+      #xat_container,
+      #xat,
+      #partides_usuaris_container,
+      #partides, #usuaris,
+      #tapet_container,
+      #tapet, #log{
+        width:100%;
+      }
+      #partides_usuaris_container{
+        justify-content:center;
+      }
+      #usuaris_container{
+        margin-left:2px;
+      }
+    }
+  </style>
+  <!--css tapet-->
+  <style>
+    #tapet {
+      background:green;
+      height:361px;
+      margin-right:1px;
+      position:relative;
+      user-select:none;
+      width:615px;
+    }
+
+    #tapet div.jugador {
+      background:#00aa00;
+      border-radius:10px;
+      box-shadow:inset 0 0 10px #000000;
+      color:#333;
+      font-size:smaller;
+      height:120px;
+      padding:2px;
+      position:absolute;
+      text-align:center;
+      width:100px;
+    }
+    #tapet #jugadorN {top:5px;  left:110px;}
+    #tapet #jugadorS {top:130px;left:110px;}
+    #tapet #jugadorE {top:67px; left:215px;}
+    #tapet #jugadorO {top:67px; left:5px;}
+
+    /*jugador que ha de tirar*/
+    #tapet div.jugador.actiu {
+      color:blue;
+      font-weight:bold;
+    }
+
+    /*carta a terra*/
+    #tapet div.jugador img{
+      display:block;
+      margin:3px auto 0 auto;
+    }
+
+    /*status*/
+    #tapet #status_partida {
+      background:lightgreen;
+      border:1px solid blue;
+      height:20px;
+      padding:5px;
+      position:absolute;
+      right:0;
+      top:0;
+    }
+
+    /*triomf*/
+    #tapet #triomf {
+      position:absolute;
+      right:1px;
+      top:236px;
+    }
+
+    /*ultima basa*/
+    #tapet #veure_ultima_basa {
+      left:1px;
+      position:absolute;
+      top:236px;
+    }
+
+    /*ma*/
+    #tapet #ma{
+      border-top:1px solid lightgreen;
+      bottom:0;
+      height:92px;
+      padding-left:1px;
+      padding-top:1px;
+      position:absolute;
+      width:100%;
+    }
+
+    /*cartes de la mà*/
+    #tapet #ma img.carta {
+      margin-right:-10px;
+    }
+    #tapet #ma img.carta.preseleccionada {
+      /*animació*/
+      transform:translateY(-10px);
+      transition:transform 0.1s;
+    }
+
+    /*menú cantar*/
+    /*botons contrar/recontrar/santvicenç*/
+    #tapet div.menu-cantar {
+      background:#fff785;
+      border:4px solid rgba(5, 5, 5, .5);
+      box-shadow:0 1px 20px rgb(0,0,0);
+      left:10px;
+      padding:5px;
+      position:absolute;
+      text-align:center;
+      top:65px;
+    }
+    #tapet div.menu-cantar img {
+      border:1px solid transparent;
+    }
+    #tapet div.menu-cantar img:hover {
+      border:1px solid blue;
+    }
+    #tapet div.menu-cantar button {
+      margin:0 3px;
+      padding:10px 16px;
+    }
+
+    /*info partida*/
+    #info_partida {
+      display:flex;
+      font-size:smaller;
+      justify-content:space-between;
+      padding-left:1px;
+    }
+
+    /*log*/
+    #log{
+      background:#f5f5f5;
+      box-shadow:inset 0 0 1px black;
+      font-family:monospace;
+      font-size:smaller;
+      height:351px;
+      overflow-y:auto;
+      padding-left:1px;
+      padding-top:10px;
+      width:307px;
+    }
+  </style>
 </head><body onload="init()">
 
-<!--titol + entrar al xat container-->
-<div style=padding-left:8px>
+<!--titol + nom usuari-->
+<div style="padding-left:8px">
+  <!--titol-->
+  <h3 id=titol>
+    Botifarra online <code>v0.1 (beta)</code>
+  </h3>
+  <!--nom usuari-->
+  <div class=flex>
+    <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=20 value='nai'>
+    <button id=btn_entrar>entrar</button>
+    <script>
+      (function(){
+        /*NOM USUARI*/
+        var nom_usuari=document.getElementById('nom_usuari');
 
-<!--titol-->
-<h3 id=titol>
-  Botifarra online <code>v0.1 (beta)</code>
-</h3>
-
-<!--entrar al xat container-->
-<div class=flex>
-  <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=20 value='nai'>
-  <button id=btn_entrar>entrar</button>
-  <script>
-    (function(){
-      /*NOM USUARI*/
-      var nom_usuari=document.getElementById('nom_usuari');
-
-      //processa paràmetre GET=nick (si n'hi ha)
-      var GET1=window.location.search.substr(1).split('=')[1];
-      if(GET1){
-        nom_usuari.value=GET1;
-        return;
-      }
-
-      //si no GET: processa cookie
-      //comprova si usuari ja havia entrat abans per guardar el nom
-      //get cookie (stackoverflow)
-      function getCookie(cname){
-        var name=cname+"=";
-        var ca=document.cookie.split(';');
-        for(var i=0;i<ca.length;i++){
-          var c=ca[i];
-          while(c.charAt(0)==' '){c=c.substring(1);}
-          if(c.indexOf(name)==0){
-            return c.substring(name.length,c.length);
-          }
+        //processa paràmetre GET=nick (si n'hi ha)
+        var GET1=window.location.search.substr(1).split('=')[1];
+        if(GET1){
+          nom_usuari.value=GET1;
+          return;
         }
-        return false;
-      }
 
-      var cookie_nom_usuari=getCookie('nom_usuari');
-      if(cookie_nom_usuari){
-        nom_usuari.value=cookie_nom_usuari;
-        return;
-      }
+        //si no GET: processa cookie
+        //comprova si usuari ja havia entrat abans per guardar el nom
+        //get cookie (stackoverflow)
+        function getCookie(cname){
+          var name=cname+"=";
+          var ca=document.cookie.split(';');
+          for(var i=0;i<ca.length;i++){
+            var c=ca[i];
+            while(c.charAt(0)==' '){c=c.substring(1);}
+            if(c.indexOf(name)==0){
+              return c.substring(name.length,c.length);
+            }
+          }
+          return false;
+        }
 
-      //si no GET ni cookie escriu num random 1 a 1000
-      nom_usuari.value="nai_"+(Math.floor(Math.random()*1000)+1);
-    })();
-  </script>
-</div>
+        var cookie_nom_usuari=getCookie('nom_usuari');
+        if(cookie_nom_usuari){
+          nom_usuari.value=cookie_nom_usuari;
+          return;
+        }
 
+        //si no GET ni cookie escriu num random 1 a 1000
+        nom_usuari.value="nai_"+(Math.floor(Math.random()*1000)+1);
+      })();
+    </script>
+  </div>
 </div><hr>
 
 <!--indicador loading-->
 <div id=ico_loading style="text-align:center">
-  <img src="/img/loading.gif" style="display:block;margin:auto;">
-  Carregant app...
+  <img src="img/loading.gif" style="display:block;margin:auto;">
+  Carregant...
 </div>
 
 <!--main container-->
 <div id=main style=display:none>
 
 <!--usuaris + xat + partides-->
-<div id=top_container class=flex style="justify-content:center">
+<div id=top_container class=flex>
   <!--xat-->
   <div id=xat_container style="padding-left:1px;">
     <p style="font-size:small">Xat general <em id=feedback></em></p>
@@ -107,10 +356,8 @@
   </div>
 </div>
 
-<!--separador--><div style="margin-top:8px"></div>
-
 <!--partida actual-->
-<div id=partida_container class=flex style="justify-content:center">
+<div id=partida_container class=flex>
   <!--tapet + info partida container-->
   <div id=tapet_container>
     <!--tapet-->
@@ -149,83 +396,17 @@
   <div id=log></div>
 </div>
 
-<!--preload images-->
-<script>
-(function(){
-  [
-    '/img/cartes/or01.jpg',
-    '/img/cartes/or02.jpg',
-    '/img/cartes/or03.jpg',
-    '/img/cartes/or04.jpg',
-    '/img/cartes/or05.jpg',
-    '/img/cartes/or06.jpg',
-    '/img/cartes/or07.jpg',
-    '/img/cartes/or08.jpg',
-    '/img/cartes/or09.jpg',
-    '/img/cartes/or10.jpg',
-    '/img/cartes/or11.jpg',
-    '/img/cartes/or12.jpg',
-
-    '/img/cartes/co01.jpg',
-    '/img/cartes/co02.jpg',
-    '/img/cartes/co03.jpg',
-    '/img/cartes/co04.jpg',
-    '/img/cartes/co05.jpg',
-    '/img/cartes/co06.jpg',
-    '/img/cartes/co07.jpg',
-    '/img/cartes/co08.jpg',
-    '/img/cartes/co09.jpg',
-    '/img/cartes/co10.jpg',
-    '/img/cartes/co11.jpg',
-    '/img/cartes/co12.jpg',
-
-    '/img/cartes/es01.jpg',
-    '/img/cartes/es02.jpg',
-    '/img/cartes/es03.jpg',
-    '/img/cartes/es04.jpg',
-    '/img/cartes/es05.jpg',
-    '/img/cartes/es06.jpg',
-    '/img/cartes/es07.jpg',
-    '/img/cartes/es08.jpg',
-    '/img/cartes/es09.jpg',
-    '/img/cartes/es10.jpg',
-    '/img/cartes/es11.jpg',
-    '/img/cartes/es12.jpg',
-
-    '/img/cartes/ba01.jpg',
-    '/img/cartes/ba02.jpg',
-    '/img/cartes/ba03.jpg',
-    '/img/cartes/ba04.jpg',
-    '/img/cartes/ba05.jpg',
-    '/img/cartes/ba06.jpg',
-    '/img/cartes/ba07.jpg',
-    '/img/cartes/ba08.jpg',
-    '/img/cartes/ba09.jpg',
-    '/img/cartes/ba10.jpg',
-    '/img/cartes/ba11.jpg',
-    '/img/cartes/ba12.jpg',
-
-    '/img/botifarra.jpg',
-    '/img/delegar.jpg',
-    '/img/ico_ba.jpg',
-    '/img/ico_bo.jpg',
-    '/img/ico_co.jpg',
-    '/img/ico_de.jpg',
-    '/img/ico_es.jpg',
-    '/img/ico_or.jpg'
-  ].forEach(url=>{
-    (new Image()).src=url;
-  });
-})();
-</script>
-
 <!--fi pàgina-->
 <footer>
-  <a target=_blank href="https://github.com/holalluis/butifarra/">Botifarra online</a> |
+  <a target=_blank rel=noopener href="https://github.com/holalluis/butifarra/">Botifarra online</a> |
   Creat per Lluís Mª Bosch (2018) |
-  <a target=_blank href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a> |
-  <a target=_blank href="pendent.html">Tasques pendents</a>
+  <a target=_blank rel=noopener href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a> |
+  <a target=_blank rel=noopener href="pendent.html">Tasques pendents</a>
 </footer>
 
+<!--websocket library-->
+<script src="libs/socket.io/2.0.4/socket.io.js"></script>
 <!--client app-->
 <script src="client.js"></script>
+<!--preload images-->
+<script src="preload.js" async></script>
