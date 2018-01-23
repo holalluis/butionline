@@ -169,46 +169,30 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 /* Sons */
 var Sons={
-  xat:function(){
-    var a=new Audio("snd/xat.mp3");
-    a.play();
-  },
-  xat_entra:function(){
-    var a=new Audio("snd/xat_entra.mp3");
-    a.play();
-  },
-  xat_surt:function(){
-    var a=new Audio("snd/xat_surt.mp3");
-    a.play();
-  },
-  crear_partida:function(){
-    var a=new Audio("snd/crear_partida.wav");
-    a.play();
-  },
-  join_partida:function(){
-    var a=new Audio("snd/join_partida.wav");
-    a.play();
-  },
-  start_partida:function(){
-    var a=new Audio("snd/start_partida.mp3");
-    a.play();
-  },
-  menu_contrar:function(){
-    var a=new Audio("snd/menu_contrar.mp3");
-    a.play();
-  },
-  et_toca:function(){
-    var a=new Audio("snd/et_toca.mp3");
-    a.play();
-  },
-  carta:function(){
-    var n=Math.floor(Math.random()*10)+1;
-    var a=new Audio("snd/carta"+n+".wav");
-    a.play();
-  },
-  recollir:function(){
-    var a=new Audio("snd/recollir.mp3");
-    a.play();
+  xat:           new Audio("snd/xat.mp3"),
+  xat_entra:     new Audio("snd/xat_entra.mp3"),
+  xat_surt:      new Audio("snd/xat_surt.mp3"),
+  crear_partida: new Audio("snd/crear_partida.wav"),
+  join_partida:  new Audio("snd/join_partida.wav"),
+  start_partida: new Audio("snd/start_partida.mp3"),
+  menu_contrar:  new Audio("snd/menu_contrar.mp3"),
+  et_toca:       new Audio("snd/et_toca.mp3"),
+  recollir:      new Audio("snd/recollir.mp3"),
+  carta:{
+    carta1:  new Audio("snd/carta1.wav"),
+    carta2:  new Audio("snd/carta2.wav"),
+    carta3:  new Audio("snd/carta3.wav"),
+    carta4:  new Audio("snd/carta4.wav"),
+    carta5:  new Audio("snd/carta5.wav"),
+    carta6:  new Audio("snd/carta6.wav"),
+    carta7:  new Audio("snd/carta7.wav"),
+    carta8:  new Audio("snd/carta8.wav"),
+    carta9:  new Audio("snd/carta9.wav"),
+    carta10: new Audio("snd/carta10.wav"),
+    play:function(){
+      var n=Math.floor(Math.random()*10)+1;
+      this['carta'+n].play();
+    },
   },
 };
 
@@ -220,7 +204,7 @@ var Sons={
     socket.emit('crear-partida');
 
     //reprodueix so
-    Sons.crear_partida();
+    Sons.crear_partida.play();
   });
 
   //btn entrar onclick
@@ -338,7 +322,7 @@ var Sons={
     crea_notificacio();
 
     //reprodueix so
-    Sons.menu_contrar();
+    Sons.menu_contrar.play();
 
     //afegir botons "Sí" i "No"
     var btn_y=document.createElement('button');
@@ -368,7 +352,7 @@ var Sons={
     crea_notificacio();
 
     //reprodueix so
-    Sons.menu_contrar();
+    Sons.menu_contrar.play();
 
     //afegir botons "Sí" i "No"
     var btn_y=document.createElement('button');
@@ -398,7 +382,7 @@ var Sons={
     crea_notificacio();
 
     //reprodueix so
-    Sons.menu_contrar();
+    Sons.menu_contrar.play();
 
     //afegir botons "Sí" i "No"
     var btn_y=document.createElement('button');
@@ -493,7 +477,7 @@ var Sons={
       esborra_notificacio();
 
       //reprodueix so
-      Sons.recollir();
+      Sons.recollir.play();
     });
 
     //timeout: recollir basa automàtic en x segons
@@ -548,7 +532,7 @@ var Sons={
     }
 
     //reprodueix so
-    Sons.carta();
+    Sons.carta.play();
   });
 
   socket.on('esperant-tirada',function(jugador_id){
@@ -562,7 +546,7 @@ var Sons={
       crea_notificacio();
 
       //reprodueix so
-      Sons.et_toca();
+      Sons.et_toca.play();
 
       //mini animació per cridar atenció
       status_partida.style.transition='background 1s';
@@ -872,7 +856,7 @@ var Sons={
           this.classList.add('preseleccionada');
 
           //reprodueix so
-          Sons.carta()
+          Sons.carta.play()
         });
       }
       //debug: tira automàticament carta random
@@ -1026,7 +1010,7 @@ var Sons={
     xat.scrollTop=xat.scrollHeight;
 
     //reprodueix so
-    Sons.xat_entra();
+    Sons.xat_entra.play();
   });
 
   socket.on('sortir',function(data){
@@ -1038,7 +1022,7 @@ var Sons={
     xat.scrollTop=xat.scrollHeight;
 
     //reprodueix so
-    Sons.xat_surt();
+    Sons.xat_surt.play();
   });
 
   socket.on('canvi-nom',function(data){
@@ -1065,17 +1049,25 @@ var Sons={
   });
 
   socket.on('xat',function(data){
+    //event typing acaba
     feedback.innerHTML="";
+
+    //busca nick autor missatge
+    var nick=getUsername(data.id);
+    if(!nick){nick="<i>anònim</i>";}
+    nick="<span title='"+data.id+"'>"+nick+"</span>";
+
     xat.innerHTML+="<div>"+
-      "["+data.data.substring(0,5)+"] "+
-      "<strong>"+data.nick+"</strong>: "+
+      "["+data.data+"] "+
+      "<strong>"+nick+"</strong>: "+
       "<span>"+data.missatge+"</span>"+
     "</div>";
+
     //scroll al top
     xat.scrollTop=xat.scrollHeight;
 
     //reprodueix so
-    Sons.xat();
+    Sons.xat.play();
   });
 
   socket.on('refresca-usuaris',function(usuaris_connectats){
@@ -1169,7 +1161,7 @@ var Sons={
         div_partida.appendChild(btn);
         btn.classList.add('btn_join');
         btn.innerHTML='unir-se';
-        btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){status_partida.onclick();};Sons.join_partida()'); //no sé pq no funciona addEventListener
+        btn.setAttribute('onclick','socket.emit("join-partida","'+p.creador+'");if(debug){status_partida.onclick();};Sons.join_partida.play()'); //no sé pq no funciona addEventListener
       }
 
       //llista jugadors partida i posa botó per sortir partida
@@ -1215,11 +1207,11 @@ var Sons={
     //inicia partida
     partida.en_marxa=true;
 
-    //creador demana al servidor iniciar ronda
+    //creador demana iniciar ronda al servidor
     if(socket.id==partida.creador){
       socket.emit('start-ronda');
     }
 
     //reprodueix so
-    Sons.start_partida();
+    Sons.start_partida.play();
   });

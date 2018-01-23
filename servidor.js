@@ -584,15 +584,7 @@ io.on('connection',function(sock){
   //remote user envia missatge
   sock.on('xat',function(missatge){
     utils.log("XAT '"+missatge+"' ("+sock.id+")");
-
-    //busca nick autor missatge
-    var nick=utils.getUsername(usuaris,sock.id);
-    if(!nick){
-      nick="<i>anònim</i>";
-    }
-    nick="<span title='"+sock.id+"'>"+nick+"</span>";
-
     //emet nou missatge a tothom
-    io.sockets.emit('xat',{nick,missatge,data:utils.novaData()});
+    io.sockets.emit('xat',{id:sock.id,missatge,data:utils.novaData().substring(0,5)});
   });
 });
