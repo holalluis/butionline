@@ -587,6 +587,6 @@ io.on('connection',function(sock){
   sock.on('xat',function(missatge){
     utils.log("XAT '"+missatge+"' ("+sock.id+")");
     //emet nou missatge a tothom
-    io.sockets.emit('xat',{id:sock.id,missatge,data:utils.novaData().substring(0,5)});
+    io.sockets.emit('xat',{id:sock.id,missatge,data:utils.novaData()});
   });
 });

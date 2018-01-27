@@ -1,8 +1,7 @@
 /* UTILS / tools */
 
 //1. obtenir nom usuari a partir del socket id
-function getUsername(usuaris,sock_id)
-{
+function getUsername(usuaris,sock_id) {
   var filtrats=usuaris.filter(u=>{return u.id==sock_id});
   if(filtrats.length){
     return filtrats[0].nom;
@@ -10,15 +9,18 @@ function getUsername(usuaris,sock_id)
   return false;
 }
 
-//2. crea date string
-function novaData()
-{
-  return (new Date).toISOString().substr(11,8);
+//2. crea date unix format (int)
+function novaData() {
+  return (new Date).getTime();
+}
+
+//nova data format string
+function novaDataF() {
+  return (new Date()).toISOString().substr(2,17).replace('T',' ');
 }
 
 //3. get partida by sock id creador
-function getPartida(partides,sock_id)
-{
+function getPartida(partides,sock_id) {
   var filtrats=partides.filter(p=>{return p.creador==sock_id});
   if(filtrats.length){
     return filtrats[0];
@@ -28,13 +30,13 @@ function getPartida(partides,sock_id)
 }
 
 //4. console.log amb data
-function log(msg){
-  var d='['+novaData()+']';
+function log(msg) {
+  var d='['+novaDataF()+']';
   console.log(d,msg);
 }
 
 //export
-module.exports={
+module.exports= {
   getUsername,
   novaData,
   getPartida,

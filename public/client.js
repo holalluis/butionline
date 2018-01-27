@@ -49,7 +49,7 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
   var log=document.getElementById('log');
 
 
-/* Utils */
+/* utils */
   //fx <body onload=init()>
   function init(){
     if(debug){
@@ -149,6 +149,23 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
     btn.addEventListener('click',function(){
       div.parentNode.removeChild(div);
     });
+  }
+
+  function esborrar_partida(){
+    if(confirm("Segur que vols esborrar la partida?")){
+      socket.emit("esborrar-partida");
+    }
+  }
+
+  function sortir_partida(partida_id){
+    if(confirm("Segur que vols sortir de la partida?")){
+      socket.emit('exit-partida',partida_id);
+    }
+  }
+
+  //string local amb hora i minut
+  function formatData(d){
+    return (new Date(d)).toLocaleTimeString().substr(0,5);
   }
 
 
@@ -417,7 +434,7 @@ var Sons={
     partida.equips[1].punts+=e1;
     partida.equips[2].punts+=e2;
     partida.bases=[];
-    partida.delegada=false;
+    partida.delegat=false;
 
     //update view
     punts_e1.innerHTML=partida.equips[1].punts;
@@ -1003,7 +1020,7 @@ var Sons={
 
   socket.on('entrar',function(data){
     xat.innerHTML+="<div style=color:green title='"+data.id+"'>"+
-      "["+data.data.substring(0,5)+"] "+
+      "["+formatData(data.data)+"] "+
       "<em>"+data.nom+" ha entrat al xat</em>"+
     "</div>";
     //scroll al top
@@ -1015,7 +1032,7 @@ var Sons={
 
   socket.on('sortir',function(data){
     xat.innerHTML+="<div style=color:red title='"+data.id+"'>"+
-      "["+data.data.substring(0,5)+"] "+
+      "["+formatData(data.data)+"] "+
       "<em>"+data.nom+" ha sortit del xat</em>"+
     "</div>";
     //scroll al top
@@ -1027,7 +1044,7 @@ var Sons={
 
   socket.on('canvi-nom',function(data){
     xat.innerHTML+="<div style=color:green title='"+data.id+"'>"+
-      "["+data.data.substring(0,5)+"] "+
+      "["+formatData(data.data)+"] "+
       "<em>"+data.antic+" ara és "+data.nou+"</em>"+
     "</div>";
     //scroll al top
@@ -1058,7 +1075,7 @@ var Sons={
     nick="<span title='"+data.id+"'>"+nick+"</span>";
 
     xat.innerHTML+="<div>"+
-      "["+data.data+"] "+
+      "["+formatData(data.data)+"] "+
       "<strong>"+nick+"</strong>: "+
       "<span>"+data.missatge+"</span>"+
     "</div>";
@@ -1074,10 +1091,11 @@ var Sons={
     comptador_usuaris.innerHTML=usuaris_connectats.length;
     usuaris_actuals=usuaris_connectats;
     usuaris.innerHTML="";
+
     usuaris_connectats.forEach(u=>{
       var nom=u.nom;
-      if(u.id==socket.id){
-        nom="<b>"+nom+"</b>";}
+      //posa jugador negreta si ets tu
+      if(u.id==socket.id){ nom="<b>"+nom+"</b>"; }
       usuaris.innerHTML+='<li title='+u.id+'>'+nom+'</li>';
     });
   });
@@ -1128,22 +1146,14 @@ var Sons={
         (function(){
           var btn=document.createElement('button');
           div_partida.appendChild(btn);
+
+          btn.setAttribute('onclick',"esborrar_partida()");
           btn.innerHTML='esborrar';
-          //no sé pq no funciona addEventListener
-          btn.setAttribute('onclick','socket.emit("esborrar-partida")');
         })();
 
         //afegeix botó començar
         if(p.jugadors==4){
           div_partida.innerHTML+=" ";
-          /*
-            //FUTUR: CREA SELECT TRIAR PUNTS (51, 101, 151)
-            (function(){
-              var select=" <select id=select_punts><option>51<option selected>101<option>151</select> ";
-              div_partida.innerHTML+=select;
-            })();
-          */
-
           //crea btn començar
           if(p.en_marxa==false){
             var btn=document.createElement('button');
@@ -1184,7 +1194,7 @@ var Sons={
 
           //afegeix botó "sortir de la partida"
           if(id==socket.id && p.creador!=socket.id){
-            div_jugador.innerHTML+="<button onclick=socket.emit('exit-partida','"+p.creador+"')>sortir</button>";
+            div_jugador.innerHTML+="<button onclick=sortir_partida('"+p.creador+"')>sortir</button>";
           }
         });
       })();

@@ -5,8 +5,9 @@
   <link rel="icon" href="img/favicon.png" type="image/x-icon">
   <link rel="manifest" href="manifest.json">
   <title>Botifarra</title>
+
   <!--CSS-->
-  <!--css important-->
+  <!--1. css important-->
   <style>
     body{
       margin:0;
@@ -113,27 +114,9 @@
     footer a {
       color:grey;
     }
-
-    /*RESPONSIVE*/
-    @media only screen and (max-width:768px){
-      #top_container,
-      #xat_container,
-      #xat,
-      #partides_usuaris_container,
-      #partides, #usuaris,
-      #tapet_container,
-      #tapet, #log{
-        width:100%;
-      }
-      #partides_usuaris_container{
-        justify-content:center;
-      }
-      #usuaris_container{
-        margin-left:2px;
-      }
-    }
   </style>
-  <!--css tapet-->
+
+  <!--2. css tapet-->
   <style>
     #tapet {
       background:green;
@@ -261,6 +244,27 @@
       padding-left:1px;
       padding-top:10px;
       width:307px;
+    }
+  </style>
+
+  <!--3. responsive-->
+  <style>
+    @media only screen and (max-width:768px){
+      #top_container,
+      #xat_container,
+      #xat,
+      #partides_usuaris_container,
+      #partides, #usuaris,
+      #tapet_container,
+      #tapet, #log{
+        width:100%;
+      }
+      #partides_usuaris_container{
+        justify-content:center;
+      }
+      #usuaris_container{
+        margin-left:2px;
+      }
     }
   </style>
 </head><body onload="init()">
