@@ -1,5 +1,5 @@
 # botifarra online
-## status: versió beta privada
+## status: versió beta
 
 Joc de la botifarra online inspirat en el butinet.
 
@@ -34,3 +34,17 @@ ofereixo cap garantia que el servidor funcioni les 24 hores del dia.
 - Butinet (windows i web)
 - Buticard (android)
 - Buticat (android)
+
+## Crèdits
+Creat per Lluís Mª Bosch
+
+## beta-testers
+Dono les gràcies per fer de testers a:
+- Esteve 
+- Francesc
+- Roger
+- Gerard
+- Mireia
+- Elena
+- Xevi
+- Andreu

@@ -3,11 +3,10 @@ var debug=true;
 var debug=false;
 
 
-/* Nou client socket
-var socket=io.connect('http://164.132.111.240:4000'); //servidor
-var socket=io.connect('http://192.168.001.130:4000'); //local
-*/
-var socket=io.connect('http://127.000.000.001:4000'); //loopback
+/* Nou client socket */
+//var socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
+//var socket=io.connect('http://192.168.001.130:4000'); //local
+  var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
 
 /* Variables globals */
@@ -21,7 +20,7 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
   var notif_pendent=false;
 
 
-/* DOM handlers (ordenat per seccions) */
+/* DOM handlers (ordenat de dalt a baix) */
   var ico_loading=document.getElementById('ico_loading');
   var nom_usuari=document.getElementById('nom_usuari');
   var btn_entrar=document.getElementById('btn_entrar');
@@ -165,7 +164,11 @@ var socket=io.connect('http://127.000.000.001:4000'); //loopback
 
   //string local amb hora i minut
   function formatData(d){
-    return (new Date(d)).toLocaleTimeString().substr(0,5);
+    var data=new Date(d);
+    var local=data.toLocaleTimeString().split(':');
+    var h=local[0];
+    var m=local[1];
+    return h+":"+m;
   }
 
 
