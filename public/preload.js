@@ -1,60 +1,37 @@
-(function(){
-  [
-    '/img/cartes/or01.jpg',
-    '/img/cartes/or02.jpg',
-    '/img/cartes/or03.jpg',
-    '/img/cartes/or04.jpg',
-    '/img/cartes/or05.jpg',
-    '/img/cartes/or06.jpg',
-    '/img/cartes/or07.jpg',
-    '/img/cartes/or08.jpg',
-    '/img/cartes/or09.jpg',
-    '/img/cartes/or10.jpg',
-    '/img/cartes/or11.jpg',
-    '/img/cartes/or12.jpg',
-    '/img/cartes/co01.jpg',
-    '/img/cartes/co02.jpg',
-    '/img/cartes/co03.jpg',
-    '/img/cartes/co04.jpg',
-    '/img/cartes/co05.jpg',
-    '/img/cartes/co06.jpg',
-    '/img/cartes/co07.jpg',
-    '/img/cartes/co08.jpg',
-    '/img/cartes/co09.jpg',
-    '/img/cartes/co10.jpg',
-    '/img/cartes/co11.jpg',
-    '/img/cartes/co12.jpg',
-    '/img/cartes/es01.jpg',
-    '/img/cartes/es02.jpg',
-    '/img/cartes/es03.jpg',
-    '/img/cartes/es04.jpg',
-    '/img/cartes/es05.jpg',
-    '/img/cartes/es06.jpg',
-    '/img/cartes/es07.jpg',
-    '/img/cartes/es08.jpg',
-    '/img/cartes/es09.jpg',
-    '/img/cartes/es10.jpg',
-    '/img/cartes/es11.jpg',
-    '/img/cartes/es12.jpg',
-    '/img/cartes/ba01.jpg',
-    '/img/cartes/ba02.jpg',
-    '/img/cartes/ba03.jpg',
-    '/img/cartes/ba04.jpg',
-    '/img/cartes/ba05.jpg',
-    '/img/cartes/ba06.jpg',
-    '/img/cartes/ba07.jpg',
-    '/img/cartes/ba08.jpg',
-    '/img/cartes/ba09.jpg',
-    '/img/cartes/ba10.jpg',
-    '/img/cartes/ba11.jpg',
-    '/img/cartes/ba12.jpg',
-    '/img/botifarra.jpg',
-    '/img/delegar.jpg',
-    '/img/ico_ba.jpg',
-    '/img/ico_bo.jpg',
-    '/img/ico_co.jpg',
-    '/img/ico_de.jpg',
-    '/img/ico_es.jpg',
-    '/img/ico_or.jpg',
-  ].forEach(url=>{(new Image()).src=url;});
-})();
+/*Preload media*/
+
+/* Imatges:
+  millor no fer preload
+  pq tarda molt a carregar
+  es millor que tardi una mica
+  cada carta a la primera partida
+*/
+
+/* Sons */
+var Sons={
+  crear_partida: new Audio("snd/crear_partida.mp3"),
+  et_toca:       new Audio("snd/et_toca.mp3"),
+  join_partida:  new Audio("snd/join_partida.mp3"),
+  menu_contrar:  new Audio("snd/menu_contrar.mp3"),
+  recollir:      new Audio("snd/recollir.mp3"),
+  start_partida: new Audio("snd/start_partida.mp3"),
+  xat_entra:     new Audio("snd/xat_entra.mp3"),
+  xat_surt:      new Audio("snd/xat_surt.mp3"),
+  xat:           new Audio("snd/xat.mp3"),
+  carta:{
+    carta1:  new Audio("snd/carta1.mp3"),
+    carta2:  new Audio("snd/carta2.mp3"),
+    carta3:  new Audio("snd/carta3.mp3"),
+    carta4:  new Audio("snd/carta4.mp3"),
+    carta5:  new Audio("snd/carta5.mp3"),
+    carta6:  new Audio("snd/carta6.mp3"),
+    carta7:  new Audio("snd/carta7.mp3"),
+    carta8:  new Audio("snd/carta8.mp3"),
+    carta9:  new Audio("snd/carta9.mp3"),
+    carta10: new Audio("snd/carta10.mp3"),
+    play:function(){
+      var n=Math.floor(Math.random()*10)+1;
+      this['carta'+n].play();
+    },
+  },
+};

@@ -6,6 +6,9 @@
   <link rel="manifest" href="manifest.json">
   <title>Botifarra</title>
 
+  <!--websockets lib-->
+  <script src="libs/socket.io/2.0.4/socket.io.js"></script>
+
   <!--CSS-->
   <!--1. css important-->
   <style>
@@ -49,6 +52,8 @@
     /*elements*/
     h3#titol{
       margin:6px 0;
+      cursor:pointer;
+      display:inline-block;
     }
     #nom_usuari{
       display:block;
@@ -269,14 +274,15 @@
       }
     }
   </style>
-</head><body onload="init()">
+</head><body>
 
-<!--titol + nom usuari-->
+<!--top container-->
 <div style="padding-left:8px">
   <!--titol-->
-  <h3 id=titol>
+  <h3 id=titol onclick="window.location.reload()">
     Botifarra online <code>v0.1 (beta)</code>
   </h3>
+
   <!--nom usuari-->
   <div class=flex>
     <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=20 value='nai'>
@@ -405,13 +411,12 @@
 <!--fi pàgina-->
 <footer>
   <a target=_blank rel=noopener href="https://github.com/holalluis/butifarra/">Botifarra online</a> |
-  <a target=_blank rel=noopener href="https://raw.githubusercontent.com/holalluis/butifarra/master/readme.md">README</a> |
+  <a target=_blank rel=noopener href="https://github.com/holalluis/butifarra/blob/master/readme.md">README</a> |
   <a target=_blank rel=noopener href="pendent.html">Tasques pendents</a>
 </footer>
 
-<!--websocket library-->
-<script src="libs/socket.io/2.0.4/socket.io.js"></script>
+<!--sons-->
+<script async src="preload.js"></script>
+
 <!--client app-->
 <script src="client.js"></script>
-<!--preload images-->
-<script src="preload.js" async></script>

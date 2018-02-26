@@ -17,7 +17,7 @@ var debug=false;
   var partida=null;
   var partides_actuals=[];
   var ma_actual=null; //array cartes [{num,pal,propietari}]
-  var notif_pendent=false;
+  var notif_pendent=false; //per notificacions
 
 
 /* DOM handlers (ordenat de dalt a baix) */
@@ -47,10 +47,9 @@ var debug=false;
   var tipus_partida=document.getElementById('tipus_partida');
   var log=document.getElementById('log');
 
-
 /* utils */
   //fx <body onload=init()>
-  function init(){
+  document.body.onload=function(){
     if(debug){
       //entrar automàticament
       btn_entrar.dispatchEvent(new CustomEvent('click'));
@@ -59,11 +58,11 @@ var debug=false;
         history.scrollRestoration='manual';
       }
     }
-    //amaga indicador loading
-    ico_loading.parentNode.removeChild(ico_loading);
     //focus a canviar nom usuari
     nom_usuari.select();
-  }
+    //amaga indicador loading
+    ico_loading.parentNode.removeChild(ico_loading);
+  };
 
   //log partida + status
   function echo(missatge,afegir_a_log){
@@ -185,36 +184,6 @@ var debug=false;
     }
     notif_pendent=false;
   }
-
-
-/* Sons */
-var Sons={
-  xat:           new Audio("snd/xat.mp3"),
-  xat_entra:     new Audio("snd/xat_entra.mp3"),
-  xat_surt:      new Audio("snd/xat_surt.mp3"),
-  crear_partida: new Audio("snd/crear_partida.wav"),
-  join_partida:  new Audio("snd/join_partida.wav"),
-  start_partida: new Audio("snd/start_partida.mp3"),
-  menu_contrar:  new Audio("snd/menu_contrar.mp3"),
-  et_toca:       new Audio("snd/et_toca.mp3"),
-  recollir:      new Audio("snd/recollir.mp3"),
-  carta:{
-    carta1:  new Audio("snd/carta1.wav"),
-    carta2:  new Audio("snd/carta2.wav"),
-    carta3:  new Audio("snd/carta3.wav"),
-    carta4:  new Audio("snd/carta4.wav"),
-    carta5:  new Audio("snd/carta5.wav"),
-    carta6:  new Audio("snd/carta6.wav"),
-    carta7:  new Audio("snd/carta7.wav"),
-    carta8:  new Audio("snd/carta8.wav"),
-    carta9:  new Audio("snd/carta9.wav"),
-    carta10: new Audio("snd/carta10.wav"),
-    play:function(){
-      var n=Math.floor(Math.random()*10)+1;
-      this['carta'+n].play();
-    },
-  },
-};
 
 
 /* DOM events */
@@ -477,7 +446,7 @@ var Sons={
 
   socket.on('recollir-basa',function(){
     //recollir basa automàtic en x segons
-    var segons_espera=5;
+    var segons_espera = debug ? 0 : 5;
 
     echo('Recull la basa fent click al tapet ('+segons_espera+'s)');
     crea_notificacio();
@@ -528,9 +497,26 @@ var Sons={
 
     echo(getUsername(id)+" ha jugat una carta",true);
 
-    //fes apareixer carta al tapet
+    //fes apareixer una carta al tapet
     var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
-    if(carta) carta.innerHTML+="<img src='/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg'>";
+    if(carta){
+      //la carta pot trigar a aparèixer el primer cop
+
+      //posa text amb la carta que apareixerà i icona loading
+      var div=document.createElement('div');
+      carta.appendChild(div);
+      div.innerHTML=""+
+        "<p><em>"+num+"<br>"+
+        {or:"oros",co:"copes",es:"espases",ba:"bastos"}[pal]+
+        "</em><br><img src=img/loading.gif style='width:33px'></p>"+
+      "";
+
+      //carrega la carta
+      var img=new Image();
+      carta.appendChild(img);
+      img.onload=function(){div.parentNode.removeChild(div)};
+      img.src="/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg";
+    }
 
     //afegeix carta a basa
     partida.basa.push({pal,num});
@@ -994,7 +980,18 @@ var Sons={
         .forEach(c=>{
           var pal=c.pal;
           var num=(c.num<10)?"0"+c.num:c.num;
-          ma.innerHTML+="<img class=carta pal="+pal+" num="+c.num+" src='/img/cartes/"+pal+num+".jpg'>";
+          //fes apareixer la mà rebuda
+          var img=new Image(33,33);
+          ma.appendChild(img);
+          img.src="/img/loading.gif";
+
+          var img2=new Image();
+          ma.appendChild(img2);
+          img2.classList.add('carta');
+          img2.setAttribute('pal',pal);
+          img2.setAttribute('num',c.num);
+          img2.onload=function(){ma.removeChild(img)};
+          img2.src="/img/cartes/"+pal+num+".jpg";
         });
     });
 
