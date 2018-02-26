@@ -91,8 +91,6 @@
       width:229px;
     }
     #btn_crear_partida {
-      display:block;
-      width:100%;
       background:lightgreen;
     }
     #usuaris{
@@ -353,11 +351,11 @@
   <div id=partides_usuaris_container class=flex>
     <!--partides-->
     <div id=partides_container style="padding-left:1px;">
-      <p style="font-size:small;">
+      <p style="font-size:small;height:16px">
         Partides (<span id=comptador_partides>0</span>)
+        <button id=btn_crear_partida>nova partida</button>
       </p>
       <div id=partides></div>
-      <button id=btn_crear_partida>crear</button>
     </div>
 
     <!--usuaris-->
@@ -388,7 +386,7 @@
 
       <!--boto veure ultima basa-->
       <div id=veure_ultima_basa onclick="veure_ultima_basa()" style="visibility:hidden">
-        <img src="/img/ico_ultima_basa.jpg">
+        <img src="/img/ico_ultima_basa.jpg" title="Veure última basa">
       </div>
 
       <!--ma-->

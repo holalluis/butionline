@@ -1162,7 +1162,9 @@ var debug=false;
             btn.classList.add('btn_start');
             //no sé pq no funciona addEventListener
             btn.setAttribute('onclick','socket.emit("start-partida");if(debug){status_partida.onclick();}');
+            //moure a css TODO
             btn.style.background='lightgreen';
+            btn.style.width='100%';
           }
         }
       }else if(p.jugadors<4 && partida==null && esta_dins_una_partida==false){
