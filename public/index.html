@@ -4,10 +4,34 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="icon" href="img/favicon.png" type="image/x-icon">
   <link rel="manifest" href="manifest.json">
-  <title>Botifarra</title>
+  <title>Buti</title>
 
   <!--websockets lib-->
   <script src="libs/socket.io/2.0.4/socket.io.js"></script>
+
+  <!--cookies-->
+  <script>
+    function getCookie(cname){
+      var name=cname+"=";
+      var ca=document.cookie.split(';');
+      for(var i=0;i<ca.length;i++){
+        var c=ca[i];
+        while(c.charAt(0)==' '){c=c.substring(1);}
+        if(c.indexOf(name)==0){
+          return c.substring(name.length,c.length);
+        }
+      }
+      return false;
+    }
+    function setCookie(name,value,days){
+      days=days||365;
+      var d=new Date();
+      d.setTime(d.getTime()+(days*24*60*60*1000));
+      var expires="expires="+d.toUTCString();
+      //set cookie
+      document.cookie=name+"="+value+";"+expires;
+    }
+  </script>
 
   <!--CSS-->
   <!--1. css important-->
@@ -109,15 +133,14 @@
       display:block;
     }
     footer{
-      margin-top:8px;
+      margin-top:30px;
       padding:8px 0 0 8px;
-      height:100px;
-      background:linear-gradient(to top,white,black);
-      color:grey;
       font-family:monospace;
+      text-align:center;
+      border-top:1px solid #ccc
     }
     footer a {
-      color:grey;
+      /*color:grey;*/
     }
   </style>
 
@@ -130,6 +153,16 @@
       position:relative;
       user-select:none;
       width:615px;
+    }
+
+    #tapet #btn_fullscreen{
+      display:block;
+      border:1px solid blue;
+      margin:0px;
+      top:0px;
+      left:0px;
+      background:lightgreen;
+      display:none;/*desactivat*/
     }
 
     #tapet div.jugador {
@@ -274,11 +307,11 @@
   </style>
 </head><body>
 
-<!--top container-->
-<div style="padding-left:8px">
+<!--titol + login-->
+<div id=titol_container style="padding-left:8px">
   <!--titol-->
   <h3 id=titol onclick="window.location.reload()">
-    Botifarra online <code>v0.1 (beta)</code>
+    Buti online <code>v0.1 (beta)</code>
   </h3>
 
   <!--nom usuari-->
@@ -299,20 +332,6 @@
 
         //si no GET: processa cookie
         //comprova si usuari ja havia entrat abans per guardar el nom
-        //get cookie (stackoverflow)
-        function getCookie(cname){
-          var name=cname+"=";
-          var ca=document.cookie.split(';');
-          for(var i=0;i<ca.length;i++){
-            var c=ca[i];
-            while(c.charAt(0)==' '){c=c.substring(1);}
-            if(c.indexOf(name)==0){
-              return c.substring(name.length,c.length);
-            }
-          }
-          return false;
-        }
-
         var cookie_nom_usuari=getCookie('nom_usuari');
         if(cookie_nom_usuari){
           nom_usuari.value=cookie_nom_usuari;
@@ -324,7 +343,7 @@
       })();
     </script>
   </div>
-</div><hr>
+</div>
 
 <!--indicador loading-->
 <div id=ico_loading style="text-align:center">
@@ -391,6 +410,9 @@
 
       <!--ma-->
       <div id=ma></div>
+
+      <!--boto fullscreen-->
+      <button id=btn_fullscreen>&#9635;</button>
     </div>
 
     <!--info partida-->
@@ -406,11 +428,9 @@
   <div id=log></div>
 </div>
 
-<!--fi pàgina-->
+<!--footer-->
 <footer>
-  <a target=_blank rel=noopener href="//github.com/holalluis/butionline/">Botifarra online</a> |
-  <a target=_blank rel=noopener href="//github.com/holalluis/butionline/blob/master/readme.md">README</a> |
-  <a target=_blank rel=noopener href="//github.com/holalluis/butionline/issues">Errors/millores</a>
+  <a target=_blank rel=noopener href="//github.com/holalluis/butionline/">Buti online</a>
 </footer>
 
 <!--sons-->

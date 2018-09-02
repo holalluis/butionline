@@ -2,14 +2,12 @@
 var debug=true;
 var debug=false;
 
-
-/* Nou client socket */
+/*Nou client socket */
 //var socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
 //var socket=io.connect('http://192.168.001.130:4000'); //local
-  var socket=io.connect('http://127.000.000.001:4000'); //loopback
+  var socket=io.connect('http://127.000.000.001:4000'); //local
 
-
-/* Variables globals */
+/*Variables globals */
   var timeout_typing_event=false; //per event typing
   var timeout_recollir_event=false; //per recollir basa
   var usuari=socket.id; //nom usuari valor inicial
@@ -19,8 +17,8 @@ var debug=false;
   var ma_actual=null; //array cartes [{num,pal,propietari}]
   var notif_pendent=false; //per notificacions
 
-
-/* DOM handlers (ordenat de dalt a baix) */
+/*DOM handlers (ordenat de dalt a baix) */
+  var titol_container=document.getElementById('titol_container');
   var ico_loading=document.getElementById('ico_loading');
   var nom_usuari=document.getElementById('nom_usuari');
   var btn_entrar=document.getElementById('btn_entrar');
@@ -35,6 +33,7 @@ var debug=false;
   var btn_crear_partida=document.getElementById('btn_crear_partida');
   var partides=document.getElementById('partides');
   var tapet=document.getElementById('tapet');
+  var btn_fullscreen=document.getElementById('btn_fullscreen');
   var jugadorN=document.getElementById('jugadorN');
   var jugadorS=document.getElementById('jugadorS');
   var jugadorE=document.getElementById('jugadorE');
@@ -170,7 +169,6 @@ var debug=false;
     return h+":"+m;
   }
 
-
 /* Notificacions */
   function crea_notificacio(){
     if(notif_pendent==false){
@@ -184,7 +182,6 @@ var debug=false;
     }
     notif_pendent=false;
   }
-
 
 /* DOM events */
   //btn crear partida
@@ -214,7 +211,7 @@ var debug=false;
     btn_entrar.innerHTML="canviar nom";
 
     //canvia el <title></title>
-    document.title="Botifarra - "+usuari;
+    document.title=document.title+" - "+usuari;
 
     //si hi havia notif pendent posa-la un altre cop
     if(notif_pendent){
@@ -228,7 +225,10 @@ var debug=false;
     socket.emit('entrar',usuari);
 
     //guarda usuari al cookie "nom_usuari"
-    document.cookie="nom_usuari="+usuari;
+    setCookie('nom_usuari',usuari);
+
+    //amaga menu login
+    titol_container.style.display='none';
   });
 
   //nom usuari onkeypress
@@ -260,6 +260,16 @@ var debug=false;
       btn_missatge.dispatchEvent(new CustomEvent('click'));}
   });
 
+  //boto fullscren toggle
+  btn_fullscreen.addEventListener('click',function(){
+    if(!(document.webkitCurrentFullScreenElement||document.fullScreenElement)){
+      if(tapet.webkitRequestFullscreen){ tapet.webkitRequestFullscreen();return;}
+      if(tapet.requestFullscreen){       tapet.requestFullscreen();return;}
+    }else{
+      if(document.webkitExitFullscreen){    document.webkitExitFullscreen();return;}
+      if(document.exitFullscreen){          document.exitFullscreen();return;}
+    }
+  });
 
 /* Escolta events socket emesos pel servidor */
   socket.on('partida-abandonada',function(){
