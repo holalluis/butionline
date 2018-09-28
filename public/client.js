@@ -4,8 +4,8 @@ var debug=false;
 
 /*Nou client socket */
 //var socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
-//var socket=io.connect('http://192.168.001.130:4000'); //local
-  var socket=io.connect('http://127.000.000.001:4000'); //local
+//var socket=io.connect('http://127.000.000.001:4000'); //local
+  var socket=io.connect('http://192.168.001.131:4000'); //local
 
 /*Variables globals */
   var timeout_typing_event=false; //per event typing
@@ -261,7 +261,7 @@ var debug=false;
   });
 
   //boto fullscren toggle
-  btn_fullscreen.addEventListener('click',function(){
+  status_partida.addEventListener('dblclick',function(){
     if(!(document.webkitCurrentFullScreenElement||document.fullScreenElement)){
       if(tapet.webkitRequestFullscreen){ tapet.webkitRequestFullscreen();return;}
       if(tapet.requestFullscreen){       tapet.requestFullscreen();return;}
