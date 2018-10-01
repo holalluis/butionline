@@ -1,11 +1,11 @@
 /*DEBUG*/
-var debug=true;
 var debug=false;
+var debug=true;
 
 /*Nou client socket */
 //var socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
-//var socket=io.connect('http://127.000.000.001:4000'); //local
-  var socket=io.connect('http://192.168.001.131:4000'); //local
+  var socket=io.connect('http://127.000.000.001:4000'); //local
+//var socket=io.connect('http://192.168.001.131:4000'); //local
 
 /*Variables globals */
   var timeout_typing_event=false; //per event typing
