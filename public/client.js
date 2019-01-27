@@ -1,6 +1,6 @@
 /*DEBUG*/
-var debug=false;
 var debug=true;
+var debug=false;
 
 /*Nou client socket */
 //var socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
@@ -219,7 +219,7 @@ var debug=true;
     }
 
     //fes visible la pàgina
-    document.getElementById('main').style.display='block';
+    document.querySelector('main').style.display='grid';
 
     //emet event entrar
     socket.emit('entrar',usuari);
@@ -261,7 +261,7 @@ var debug=true;
   });
 
   //boto fullscren toggle
-  status_partida.addEventListener('dblclick',function(){
+  btn_fullscreen.addEventListener('click',function(){
     if(!(document.webkitCurrentFullScreenElement||document.fullScreenElement)){
       if(tapet.webkitRequestFullscreen){ tapet.webkitRequestFullscreen();return;}
       if(tapet.requestFullscreen){       tapet.requestFullscreen();return;}
@@ -1105,7 +1105,7 @@ var debug=true;
     usuaris_connectats.forEach(u=>{
       var nom=u.nom;
       //posa jugador negreta si ets tu
-      if(u.id==socket.id){ nom="<b>"+nom+"</b>"; }
+      if(u.id==socket.id){ nom="<u>"+nom+"</u>"; }
       usuaris.innerHTML+='<li title='+u.id+'>'+nom+'</li>';
     });
   });
@@ -1118,7 +1118,7 @@ var debug=true;
     comptador_partides.innerHTML=partides_arr.length;
     partides.innerHTML="";
     if(partides_arr.length==0){
-      partides.innerHTML="<small><i style=color:#666>~no hi ha partides</i></small>";
+      partides.innerHTML="<small><i>~no hi ha partides</i></small>";
     }
 
     //mira si el client està dins alguna una partida

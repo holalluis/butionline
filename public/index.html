@@ -4,9 +4,10 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="icon" href="img/favicon.png" type="image/x-icon">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
   <title>Buti</title>
 
-  <!--websockets lib-->
+  <!--lib websockets-->
   <script src="libs/socket.io/2.0.4/socket.io.js"></script>
 
   <!--cookies-->
@@ -33,12 +34,12 @@
     }
   </script>
 
-  <!--CSS-->
-  <!--1. css important-->
+  <!--1. css general-->
   <style>
+    @import url('https://fonts.googleapis.com/css?family=Roboto+Mono:400,700|Roboto:300,400,700');
     body{
-      margin:0;
-      font-family:Charter,Helvetica;
+      font-family:'Roboto', verdana;
+      color: #5C5C5C;
       overflow-y:scroll;
     }
     button{
@@ -73,97 +74,92 @@
       display:flex;
       flex-wrap:wrap;
     }
+
     /*elements*/
     h3#titol{
       margin:6px 0;
       cursor:pointer;
       display:inline-block;
     }
-    #nom_usuari{
-      display:block;
+    #nom_usuari, #btn_entrar { display:block; }
+
+    main{
+      display:grid;
+      grid-template-columns:50% 30% 20%;
+      grid-gap:2px;
     }
-    #btn_entrar{
-      display:block;
-    }
-    #top_container{
-      margin-bottom:8px;
-      justify-content:center;
-    }
-    #xat{
+    #xat, #partides, #usuaris {height:200px;}
+
+    /*xat*/
+    #xat_container #xat{
       box-shadow:inset 0 0 1px black;
       background:#f5f5f5;
       font-family:monospace;
       overflow-y:auto;
-      padding-bottom:3px;
-      height:167px;
-      width:549px;
     }
-    #missatge{
-      width:290px;
+    #xat_controls {
+      display:grid;
+      grid-template-columns:70% 30%;
+    }
+    #xat_container #xat_controls #missatge{
       display:block;
     }
-    #partida_container{
-      justify-content:center;
+    #xat_container #xat_controls #btn_missatge{
+      display:block;
+      box-shadow:1px 1px #ccc;
     }
+
+    /*partides*/
     #partides{
       background:#f5f5f5;
       box-shadow:inset 0 0 1px black;
       padding-left:1px;
       padding-right:1px;
       overflow-y:auto;
-      height:170px;
-      width:229px;
     }
+    #partides hr{ margin-bottom:0px; }
     #btn_crear_partida {
       background:lightgreen;
       box-shadow:1px 1px #ccc;
+      margin-left:1px;
     }
+
+    /*usuaris*/
     #usuaris{
       padding-left:2px;
       padding-right:1px;
       background:#f5f5f5;
       overflow-y:auto;
       box-shadow:inset 0 0 1px black;
-      height:170px;
-      width:138px;
     }
-    #partides hr{
-      margin-bottom:0px;
-    }
-    #btn_missatge{
-      display:block;
-    }
+
     footer{
       margin-top:30px;
-      padding:8px 0 0 8px;
       font-family:monospace;
-      text-align:center;
       border-top:1px solid #ccc
-    }
-    footer a {
-      /*color:grey;*/
     }
   </style>
 
   <!--2. css tapet-->
   <style>
+    #tapet_container {
+      grid-row:3;
+      grid-column:1/3; /*tapet ocupa 2 columnes*/
+    }
+
     #tapet {
       background:green;
-      height:361px;
-      margin-right:1px;
+      height:360px;
       position:relative;
       user-select:none;
-      width:615px;
     }
 
     #tapet #btn_fullscreen{
       display:block;
-      border:1px solid blue;
       margin:0px;
-      top:0px;
-      left:0px;
+      top:1px;
+      left:1px;
       background:lightgreen;
-      display:none;/*desactivat*/
     }
 
     #tapet div.jugador {
@@ -198,12 +194,11 @@
     /*status*/
     #tapet #status_partida {
       background:lightgreen;
-      border:1px solid blue;
       height:20px;
       padding:5px;
       position:absolute;
-      right:0;
-      top:0;
+      right:1px;
+      top:1px;
     }
 
     /*triomf*/
@@ -278,43 +273,16 @@
       box-shadow:inset 0 0 1px black;
       font-family:monospace;
       font-size:smaller;
-      height:351px;
       overflow-y:auto;
       padding-left:1px;
-      padding-top:10px;
-      width:307px;
-    }
-  </style>
-
-  <!--3. responsive-->
-  <style>
-    @media only screen and (max-width:768px){
-      #top_container,
-      #xat_container,
-      #xat,
-      #partides_usuaris_container,
-      #partides, #usuaris,
-      #tapet_container,
-      #tapet, #log{
-        width:100%;
-      }
-      #partides_usuaris_container{
-        justify-content:center;
-      }
-      #usuaris_container{
-        margin-left:2px;
-      }
     }
   </style>
 </head><body>
 
-<!--titol + login-->
-<div id=titol_container style="padding-left:8px">
+<!--login-->
+<div id=titol_container>
   <!--titol-->
-  <h3 id=titol onclick="window.location.reload()">
-    Buti online <code>v0.1 (beta)</code>
-  </h3>
-
+  <h3 id=titol onclick="window.location.reload()">Buti online <code>v0.1 (beta)</code></h3>
   <!--nom usuari-->
   <div class=flex>
     <input id=nom_usuari placeholder="Escriu nom usuari" maxlength=20 value='nai'>
@@ -322,10 +290,10 @@
     <script>
       (function(){
         /*NOM USUARI*/
-        var nom_usuari=document.getElementById('nom_usuari');
+        let nom_usuari=document.getElementById('nom_usuari');
 
         //processa paràmetre GET=nick (si n'hi ha)
-        var GET1=window.location.search.substr(1).split('=')[1];
+        let GET1=window.location.search.substr(1).split('=')[1];
         if(GET1){
           nom_usuari.value=GET1;
           return;
@@ -333,7 +301,7 @@
 
         //si no GET: processa cookie
         //comprova si usuari ja havia entrat abans per guardar el nom
-        var cookie_nom_usuari=getCookie('nom_usuari');
+        let cookie_nom_usuari=getCookie('nom_usuari');
         if(cookie_nom_usuari){
           nom_usuari.value=cookie_nom_usuari;
           return;
@@ -348,51 +316,33 @@
 
 <!--indicador loading-->
 <div id=ico_loading style="text-align:center">
-  <img src="img/loading.gif" style="display:block;margin:auto;">
-  Carregant...
+  <img src="img/loading.gif" style="display:block;margin:auto;"> Carregant...
 </div>
 
 <!--main container-->
-<div id=main style=display:none>
+<main style=display:none>
+  <!--primera fila-->
+  <div><small>Xat general <em id=feedback></em></small></div>
+  <div>
+    <small>Partides (<span id=comptador_partides>0</span>)</small>
+    <button id=btn_crear_partida>nova partida</button>
+  </div>
+  <div><small>Usuaris online (<span id=comptador_usuaris>0</span>)</small></div>
 
-<!--usuaris + xat + partides-->
-<div id=top_container class=flex>
-  <!--xat-->
-  <div id=xat_container style="padding-left:1px;">
-    <div style="font-size:small;margin:8px">Xat general <em id=feedback></em></div>
+  <!--segona fila-->
+  <div id=xat_container>
     <div id=xat></div>
-    <div id=xat_controls class=flex>
+    <div id=xat_controls>
+      <style>
+      </style>
       <input id=missatge placeholder="Escriu un missatge" maxlength=140 value="">
       <button id=btn_missatge>enviar</button>
     </div>
   </div>
+  <div id=partides></div>
+  <ul id=usuaris></ul>
 
-  <!--partides + usuaris-->
-  <div id=partides_usuaris_container class=flex>
-    <!--partides-->
-    <div id=partides_container style="padding-left:1px;">
-      <div class=flex style=justify-content:space-between;margin:8px>
-        <div style=font-size:small>
-          Partides (<span id=comptador_partides>0</span>)
-        </div>
-        <div style=font-size:small>
-          <button id=btn_crear_partida>nova partida</button>
-        </div>
-      </div>
-      <div id=partides></div>
-    </div>
-
-    <!--usuaris-->
-    <div id=usuaris_container style="padding-left:1px;">
-      <div style="font-size:small;margin:8px">Usuaris online (<span id=comptador_usuaris>0</span>)</div>
-      <ul id=usuaris></ul>
-    </div>
-  </div>
-</div>
-
-<!--partida actual-->
-<div id=partida_container class=flex>
-  <!--tapet + info partida container-->
+  <!--tercera fila-->
   <div id=tapet_container>
     <!--tapet-->
     <div id=tapet>
@@ -403,24 +353,20 @@
         <div id=jugadorE class=jugador></div>
         <div id=jugadorO class=jugador></div>
       </div>
-
       <!--status + triomf-->
       <div id=status_partida onclick="window.location='#tapet';return false;">Esperant nova partida</div>
       <div id=triomf style="visibility:hidden"></div>
-
       <!--boto veure ultima basa-->
       <div id=veure_ultima_basa onclick="veure_ultima_basa()" style="visibility:hidden">
         <img src="/img/ico_ultima_basa.jpg" title="Veure última basa">
       </div>
-
-      <!--ma-->
-      <div id=ma></div>
-
-      <!--boto fullscreen-->
-      <button id=btn_fullscreen>&#9635;</button>
+      <!--ma--><div id=ma></div>
+      <!--boto fullscreen--><button id=btn_fullscreen title="Pantalla completa">
+        <i class="fas fa-expand"></i>
+      </button>
     </div>
 
-    <!--info partida-->
+    <!--info partida (barra sota el tapet)-->
     <ul id=info_partida>
       <li>Obligada/101
       <li id=tipus_partida>Partida NO contrada
@@ -428,18 +374,15 @@
       <li>Equip 2: <span id=punts_e2>0</span> punts
     </ul>
   </div>
-
-  <!--log-->
-  <div id=log></div>
-</div>
+  <div id=log>log</div>
+</main>
 
 <!--footer-->
 <footer>
-  <a target=_blank rel=noopener href="//github.com/holalluis/butionline/">Buti online</a>
+  butionline.cat &mdash;
+  Tots els drets reservats &mdash;
+  <a target=_blank rel=noopener href="//github.com/holalluis/butionline/">github</a>
 </footer>
 
-<!--sons-->
-<script async src="preload.js"></script>
-
-<!--client app-->
-<script src="client.js"></script>
+<!--sons--><script async src="preload.js"></script>
+<!--client--><script src="client.js"></script>
