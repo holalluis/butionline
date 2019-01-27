@@ -359,7 +359,7 @@
 <div id=top_container class=flex>
   <!--xat-->
   <div id=xat_container style="padding-left:1px;">
-    <p style="font-size:small">Xat general <em id=feedback></em></p>
+    <div style="font-size:small;margin:8px">Xat general <em id=feedback></em></div>
     <div id=xat></div>
     <div id=xat_controls class=flex>
       <input id=missatge placeholder="Escriu un missatge" maxlength=140 value="">
@@ -371,16 +371,20 @@
   <div id=partides_usuaris_container class=flex>
     <!--partides-->
     <div id=partides_container style="padding-left:1px;">
-      <p style="font-size:small;height:16px">
-        Partides (<span id=comptador_partides>0</span>)
-        <button id=btn_crear_partida>nova partida</button>
-      </p>
+      <div class=flex style=justify-content:space-between;margin:8px>
+        <div style=font-size:small>
+          Partides (<span id=comptador_partides>0</span>)
+        </div>
+        <div style=font-size:small>
+          <button id=btn_crear_partida>nova partida</button>
+        </div>
+      </div>
       <div id=partides></div>
     </div>
 
     <!--usuaris-->
     <div id=usuaris_container style="padding-left:1px;">
-      <p style="font-size:small">Usuaris online (<span id=comptador_usuaris>0</span>)</p>
+      <div style="font-size:small;margin:8px">Usuaris online (<span id=comptador_usuaris>0</span>)</div>
       <ul id=usuaris></ul>
     </div>
   </div>
