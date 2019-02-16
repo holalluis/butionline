@@ -3,48 +3,48 @@ var debug=true;
 var debug=false;
 
 /*Nou client socket */
-//var socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
-  var socket=io.connect('http://127.000.000.001:4000'); //local
-//var socket=io.connect('http://192.168.001.131:4000'); //local
+//let socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
+  let socket=io.connect('http://127.000.000.001:4000'); //local
+//let socket=io.connect('http://192.168.001.131:4000'); //local
 
 /*Variables globals */
-  var timeout_typing_event=false; //per event typing
-  var timeout_recollir_event=false; //per recollir basa
-  var usuari=socket.id; //nom usuari valor inicial
-  var usuaris_actuals=[];
-  var partida=null;
-  var partides_actuals=[];
-  var ma_actual=null; //array cartes [{num,pal,propietari}]
-  var notif_pendent=false; //per notificacions
+  let timeout_typing_event=false; //per event typing
+  let timeout_recollir_event=false; //per recollir basa
+  let usuari=socket.id; //nom usuari valor inicial
+  let usuaris_actuals=[];
+  let partida=null;
+  let partides_actuals=[];
+  let ma_actual=null; //array cartes [{num,pal,propietari}]
+  let notif_pendent=false; //per notificacions
 
 /*DOM handlers (ordenat de dalt a baix) */
-  var titol_container=document.getElementById('titol_container');
-  var ico_loading=document.getElementById('ico_loading');
-  var nom_usuari=document.getElementById('nom_usuari');
-  var btn_entrar=document.getElementById('btn_entrar');
-  var comptador_usuaris=document.getElementById('comptador_usuaris')
-  var usuaris=document.getElementById('usuaris');
-  var feedback=document.getElementById('feedback');
-  var xat=document.getElementById('xat');
-  var xat_controls=document.getElementById('xat_controls');
-  var missatge=document.getElementById('missatge');
-  var btn_missatge=document.getElementById('btn_missatge');
-  var comptador_partides=document.getElementById('comptador_partides');
-  var btn_crear_partida=document.getElementById('btn_crear_partida');
-  var partides=document.getElementById('partides');
-  var tapet=document.getElementById('tapet');
-  var btn_fullscreen=document.getElementById('btn_fullscreen');
-  var jugadorN=document.getElementById('jugadorN');
-  var jugadorS=document.getElementById('jugadorS');
-  var jugadorE=document.getElementById('jugadorE');
-  var jugadorO=document.getElementById('jugadorO');
-  var ma=document.getElementById('ma');
-  var status_partida=document.getElementById('status_partida');
-  var triomf=document.getElementById('triomf');
-  var punts_e1=document.getElementById('punts_e1');
-  var punts_e2=document.getElementById('punts_e2');
-  var tipus_partida=document.getElementById('tipus_partida');
-  var log=document.getElementById('log');
+  let titol_container    = document.getElementById('titol_container');
+  let ico_loading        = document.getElementById('ico_loading');
+  let nom_usuari         = document.getElementById('nom_usuari');
+  let btn_entrar         = document.getElementById('btn_entrar');
+  let comptador_usuaris  = document.getElementById('comptador_usuaris')
+  let usuaris            = document.getElementById('usuaris');
+  let feedback           = document.getElementById('feedback');
+  let xat                = document.getElementById('xat');
+  let xat_controls       = document.getElementById('xat_controls');
+  let missatge           = document.getElementById('missatge');
+  let btn_missatge       = document.getElementById('btn_missatge');
+  let comptador_partides = document.getElementById('comptador_partides');
+  let btn_crear_partida  = document.getElementById('btn_crear_partida');
+  let partides           = document.getElementById('partides');
+  let tapet              = document.getElementById('tapet');
+  let btn_fullscreen     = document.getElementById('btn_fullscreen');
+  let jugadorN           = document.getElementById('jugadorN');
+  let jugadorS           = document.getElementById('jugadorS');
+  let jugadorE           = document.getElementById('jugadorE');
+  let jugadorO           = document.getElementById('jugadorO');
+  let ma                 = document.getElementById('ma');
+  let status_partida     = document.getElementById('status_partida');
+  let triomf             = document.getElementById('triomf');
+  let punts_e1           = document.getElementById('punts_e1');
+  let punts_e2           = document.getElementById('punts_e2');
+  let tipus_partida      = document.getElementById('tipus_partida');
+  let log                = document.getElementById('log');
 
 /* utils */
   //fx <body onload=init()>
@@ -77,7 +77,7 @@ var debug=false;
 
   //get nom usuari
   function getUsername(sock_id){
-    var filtrat=usuaris_actuals.filter(u=>{return u.id==sock_id});
+    let filtrat=usuaris_actuals.filter(u=>{return u.id==sock_id});
     if(filtrat.length){
       return filtrat[0].nom;
     }
@@ -95,7 +95,7 @@ var debug=false;
 
   //get partida (event 'start-partida')
   function getPartida(sock_id){
-    var filtrat=partides_actuals.filter(p=>{return p.creador==sock_id});
+    let filtrat=partides_actuals.filter(p=>{return p.creador==sock_id});
     if(filtrat.length){
       return filtrat[0];
     }
@@ -122,23 +122,23 @@ var debug=false;
     if(partida.bases.length==0){return;}
 
     //ultima basa
-    var ultima=partida.bases[partida.bases.length-1];
+    let ultima=partida.bases[partida.bases.length-1];
 
     //menu veure basa
-    var div=document.createElement('div');
+    let div=document.createElement('div');
     tapet.appendChild(div);
     div.classList.add('menu-cantar');
     div.innerHTML="<h5>Última basa</h5>";
 
     //imatges cartes
     ultima.forEach(c=>{
-      var img=document.createElement('img');
+      let img=document.createElement('img');
       img.src="/img/cartes/"+c.pal+(c.num<10?"0"+c.num:c.num)+".jpg";
       div.appendChild(img);
     });
 
     //boto ok
-    var btn=document.createElement('button');
+    let btn=document.createElement('button');
     div.appendChild(btn);
     btn.style.display='block';
     btn.style.margin='auto';
@@ -162,10 +162,10 @@ var debug=false;
 
   //string local amb hora i minut
   function formatData(d){
-    var data=new Date(d);
-    var local=data.toLocaleTimeString().split(':');
-    var h=local[0];
-    var m=local[1];
+    let data=new Date(d);
+    let local=data.toLocaleTimeString().split(':');
+    let h=local[0];
+    let m=local[1];
     return h+":"+m;
   }
 
@@ -202,15 +202,22 @@ var debug=false;
     (function(){
       usuari=nom_usuari.value;
       while(usuaris_actuals.filter(u=>{return u.nom==usuari && u.id!=socket.id}).length){
-        usuari=usuari+"2"; //modifica nom
-        nom_usuari.value=usuari;
+        let ultima_lletra = usuari[usuari.length-1];
+        let ultim_numero = parseInt(ultima_lletra); //intenta convertir a numero
+        if(ultim_numero){
+          usuari=usuari.substring(0,usuari.length-1);
+          usuari += (ultim_numero+1);
+        }else{
+          usuari+="2";
+        }
       }
+      nom_usuari.value=usuari;
     })();
 
     //canvia text botó
     btn_entrar.innerHTML="canviar nom";
 
-    //canvia el <title></title>
+    //canvia <title></title>
     document.title=document.title+" - "+usuari;
 
     //si hi havia notif pendent posa-la un altre cop
@@ -234,7 +241,7 @@ var debug=false;
   //nom usuari onkeypress
   nom_usuari.addEventListener('keypress',function(e){
     //si prem enter envia el missatge
-    var key = e.which || e.keyCode;
+    let key = e.which || e.keyCode;
     if (key === 13) { // 13 is enter
       btn_entrar.dispatchEvent(new CustomEvent('click'));
     }
@@ -255,7 +262,7 @@ var debug=false;
     //emet event typing
     socket.emit('typing',usuari);
     //si prem enter envia el missatge
-    var key=e.which||e.keyCode;
+    let key=e.which||e.keyCode;
     if(key===13){
       btn_missatge.dispatchEvent(new CustomEvent('click'));}
   });
@@ -282,13 +289,13 @@ var debug=false;
     partida=null;
 
     //2. esborra menus cantar/contrar
-    var menus=document.querySelectorAll('div.menu-cantar');
-    for(var i=0;i<menus.length;i++){
+    let menus=document.querySelectorAll('div.menu-cantar');
+    for(let i=0;i<menus.length;i++){
       menus[i].parentNode.removeChild(menus[i]);}
 
     //3. esborra les cartes del tapet
-    var cartes=document.querySelectorAll('#tapet img.carta');
-    for(var i=0;i<cartes.length;i++){
+    let cartes=document.querySelectorAll('#tapet img.carta');
+    for(let i=0;i<cartes.length;i++){
       cartes[i].parentNode.removeChild(cartes[i]);}
 
     //4. marcadors de punts a 0
@@ -301,7 +308,7 @@ var debug=false;
 
   socket.on('anunci-multiplicador',function(m){
     partida.multiplicador=m;
-    var msg;
+    let msg;
     switch(m){
       case 1: msg="Partida NO contrada (x1)"; break;
       case 2: msg="Partida CONTRADA (x2)"; break;
@@ -314,7 +321,7 @@ var debug=false;
 
   socket.on('esperant-santvicenç',function(){
     //crea menú santvicenç
-    var div=document.createElement('div');
+    let div=document.createElement('div');
     tapet.appendChild(div);
     div.classList.add('menu-cantar');
     div.innerHTML="<h5>Els rivals han recontrat. Vols fer Sant Vicenç (x8)?</h5>";
@@ -324,8 +331,8 @@ var debug=false;
     Sons.menu_contrar.play();
 
     //afegir botons "Sí" i "No"
-    var btn_y=document.createElement('button');
-    var btn_n=document.createElement('button');
+    let btn_y=document.createElement('button');
+    let btn_n=document.createElement('button');
     div.appendChild(btn_y);
     div.appendChild(btn_n);
     btn_y.innerHTML="Sí";
@@ -344,7 +351,7 @@ var debug=false;
 
   socket.on('esperant-recontro',function(){
     //crea menú recontrar
-    var div=document.createElement('div');
+    let div=document.createElement('div');
     tapet.appendChild(div);
     div.classList.add('menu-cantar');
     div.innerHTML="<h5>Els rivals han contrat. Vols recontrar (x4)?</h5>";
@@ -354,8 +361,8 @@ var debug=false;
     Sons.menu_contrar.play();
 
     //afegir botons "Sí" i "No"
-    var btn_y=document.createElement('button');
-    var btn_n=document.createElement('button');
+    let btn_y=document.createElement('button');
+    let btn_n=document.createElement('button');
     div.appendChild(btn_y);
     div.appendChild(btn_n);
     btn_y.innerHTML="Sí";
@@ -374,7 +381,7 @@ var debug=false;
 
   socket.on('esperant-contro',function(){
     //crea menú contrar
-    var div=document.createElement('div');
+    let div=document.createElement('div');
     tapet.appendChild(div);
     div.classList.add('menu-cantar');
     div.innerHTML="<h5>Han cantat "+partida.triomf+". Vols contrar (x2)?</h5>";
@@ -384,8 +391,8 @@ var debug=false;
     Sons.menu_contrar.play();
 
     //afegir botons "Sí" i "No"
-    var btn_y=document.createElement('button');
-    var btn_n=document.createElement('button');
+    let btn_y=document.createElement('button');
+    let btn_n=document.createElement('button');
     div.appendChild(btn_y);
     div.appendChild(btn_n);
     btn_y.innerHTML="Sí";
@@ -406,8 +413,8 @@ var debug=false;
   });
 
   socket.on('ronda-acabada',function(punts){
-    var e1=punts.equip1;
-    var e2=punts.equip2;
+    let e1=punts.equip1;
+    let e2=punts.equip2;
 
     //echo fi ronda
     echo("<b>fi ronda. E1: "+e1+" punts, E2: "+e2+" punts</b>",true);
@@ -424,8 +431,8 @@ var debug=false;
 
     //check if partida acabada
     if(partida.equips[1].punts>=partida.objectiu || partida.equips[2].punts>=partida.objectiu){
-      var p1=partida.equips[1].punts;
-      var p2=partida.equips[2].punts;
+      let p1=partida.equips[1].punts;
+      let p2=partida.equips[2].punts;
       echo('<big><b>partida acabada ('+p1+' a '+p2+')</b></big>',true);
 
       //reset per poder recomençar partida
@@ -456,7 +463,7 @@ var debug=false;
 
   socket.on('recollir-basa',function(){
     //recollir basa automàtic en x segons
-    var segons_espera = debug ? 0 : 5;
+    let segons_espera = debug ? 0 : 5;
 
     echo('Recull la basa fent click al tapet ('+segons_espera+'s)');
     crea_notificacio();
@@ -466,12 +473,12 @@ var debug=false;
       this.removeEventListener('click',recollir);
       clearTimeout(timeout_recollir_event);
 
-      var cartes=document.querySelectorAll('#tapet div.jugador img');
-      for(var i=0;i<cartes.length;i++){
-        var c=cartes[i];
+      let cartes=document.querySelectorAll('#tapet div.jugador img');
+      for(let i=0;i<cartes.length;i++){
+        let c=cartes[i];
         c.parentNode.removeChild(c);
       }
-      echo('Esperant que tothom reculli la basa',true);
+      //echo('Esperant que tothom reculli la basa',true);
       socket.emit('basa-recollida',partida.creador);
       esborra_notificacio();
 
@@ -485,7 +492,7 @@ var debug=false;
     },segons_espera*1000);
 
     //treu ressaltat jugador actiu
-    var actiu=document.querySelector('div.jugador.actiu');
+    let actiu=document.querySelector('div.jugador.actiu');
     if(actiu){actiu.classList.remove('actiu');}
 
     //guarda la basa
@@ -501,19 +508,19 @@ var debug=false;
   });
 
   socket.on('tirada-legal',function(data){
-    var id=data.jugador_id;
-    var pal=data.pal;
-    var num=data.num;
+    let id=data.jugador_id;
+    let pal=data.pal;
+    let num=data.num;
 
-    echo(getUsername(id)+" ha jugat una carta",true);
+    //echo(getUsername(id)+" ha jugat una carta",true);
 
     //fes apareixer una carta al tapet
-    var carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
+    let carta=document.querySelector("#tapet div.jugador[socket='"+id+"']");
     if(carta){
       //la carta pot trigar a aparèixer el primer cop
 
       //posa text amb la carta que apareixerà i icona loading
-      var div=document.createElement('div');
+      let div=document.createElement('div');
       carta.appendChild(div);
       div.innerHTML=""+
         "<p><em>"+num+"<br>"+
@@ -521,10 +528,10 @@ var debug=false;
         "</em><br><img src=img/loading.gif style='width:33px'></p>"+
       "";
 
-      //carrega la carta
-      var img=new Image();
+      //carrega la imatge
+      let img=new Image();
       carta.appendChild(img);
-      img.onload=function(){div.parentNode.removeChild(div)};
+      img.onload=function(){if(div.parentNode)div.parentNode.removeChild(div)};
       img.src="/img/cartes/"+pal+(num<10?'0'+num:num)+".jpg";
     }
 
@@ -533,7 +540,7 @@ var debug=false;
 
     //treu carta de la ma
     if(id==socket.id){
-      var carta=document.querySelector('#ma img.carta[pal='+pal+'][num="'+num+'"]');
+      let carta=document.querySelector('#ma img.carta[pal='+pal+'][num="'+num+'"]');
 
       //elimina la carta
       if(carta) carta.parentNode.removeChild(carta);
@@ -556,7 +563,7 @@ var debug=false;
     partida.actiu=jugador_id;
 
     //get nick jugador actiu
-    var nick=getUsername(jugador_id);
+    let nick=getUsername(jugador_id);
     if(socket.id==jugador_id){
       echo("ÉS EL TEU TORN! Juga una carta");
       crea_notificacio();
@@ -575,20 +582,20 @@ var debug=false;
     //futur: posa un so per indicar que et toca
 
     //treu ressaltat jugador actiu
-    var actiu=document.querySelector('div.jugador.actiu');
+    let actiu=document.querySelector('div.jugador.actiu');
     if(actiu){actiu.classList.remove('actiu');}
 
     //posa emfasi al nou jugador actiu
-    var carta=document.querySelector("#tapet div.jugador[socket='"+jugador_id+"']");
+    let carta=document.querySelector("#tapet div.jugador[socket='"+jugador_id+"']");
     if(carta) carta.classList.add('actiu');
 
     //gestiona els listeners del clic per les cartes de la mà
-    var cartes=document.querySelectorAll('#ma img.carta');
+    let cartes=document.querySelectorAll('#ma img.carta');
 
     //elimina listeners de totes les cartes fent click
-    var temp_id=partida.actiu;
+    let temp_id=partida.actiu;
     partida.actiu=null;
-    for(var i=0;i<cartes.length;i++){
+    for(let i=0;i<cartes.length;i++){
       cartes[i].dispatchEvent(new CustomEvent('click'));
       cartes[i].classList.remove('legal');
     }
@@ -607,8 +614,8 @@ var debug=false;
         if(ma_actual.length==1 || partida.basa.length==0){return true;}
 
         //info necessària
-        var triomf=partida.triomf.substring(0,2);
-        var basa=partida.basa;
+        let triomf=partida.triomf.substring(0,2);
+        let basa=partida.basa;
 
         //tradueix manilla i as per poder comparar números
         //cal desfer un cop acabada la funció
@@ -619,9 +626,9 @@ var debug=false;
 
         //info necessària
         //pal inicial, falles pal inicial i falles triomf (bool)
-        var pal_inicial=basa[0].pal;
-        var falles_p=ma_actual.filter(c=>{return c.pal==pal_inicial}).length==0;
-        var falles_t=ma_actual.filter(c=>{return c.pal==triomf}).length==0;
+        let pal_inicial=basa[0].pal;
+        let falles_p=ma_actual.filter(c=>{return c.pal==pal_inicial}).length==0;
+        let falles_t=ma_actual.filter(c=>{return c.pal==triomf}).length==0;
 
         //determina qui guanya entre 2 primeres cartes tirades
         function qui_guanya(c0,c1){
@@ -640,7 +647,7 @@ var debug=false;
 
         //determina qui guanya entre 3 primeres cartes tirades
         function qui_guanya2(c0,c1,c2){
-          var i=qui_guanya(c0,c1);//index de la basa
+          let i=qui_guanya(c0,c1);//index de la basa
           if(qui_guanya(basa[i],c2)==0){
             return i;
           }else{
@@ -649,7 +656,7 @@ var debug=false;
         }
 
         //determina si cal matar (bool)
-        var cal_matar=(function(){
+        let cal_matar=(function(){
           if     (basa.length==1){return true;} //a la 2na carta sempre s'ha de matar
           else if(basa.length==2){              //a la 3ra carta no sempre cal matar
             if(qui_guanya(basa[0],basa[1])==0){return false;} //guanya el company: no cal matar
@@ -667,7 +674,7 @@ var debug=false;
         if(basa.length==1){
           if(falles_p==false){//=no fallo
             //pots matar la carta?
-            var pots_matar=ma_actual.filter(c=>{return c.pal==pal_inicial && c.num>basa[0].num}).length>0;
+            let pots_matar=ma_actual.filter(c=>{return c.pal==pal_inicial && c.num>basa[0].num}).length>0;
             if(pots_matar){
               //no fallo i puc matar: qualsevol carta del pal inicial que mati la primera
               return (carta.pal==pal_inicial && carta.num>basa[0].num)
@@ -695,7 +702,7 @@ var debug=false;
               return carta.pal==pal_inicial;
             }else{//cal matar
               //pots matar la segona carta?
-              var pots_matar=ma_actual.filter(c=>{
+              let pots_matar=ma_actual.filter(c=>{
                 //només si és del pal inicial i la tinc més gran
                 return c.pal==pal_inicial && basa[1].pal==pal_inicial && c.num>basa[1].num
               }).length>0;
@@ -720,7 +727,7 @@ var debug=false;
                 return true;//fallo i tinc triomf però no cal matar: qualsevol carta
               }else{//=cal matar
                 //pots matar la segona carta?
-                var pots_matar=ma_actual.filter(c=>{
+                let pots_matar=ma_actual.filter(c=>{
                   return (
                     //si jo tinc triomf i ell no
                     (c.pal==triomf && basa[1].pal!=triomf) ||
@@ -748,7 +755,7 @@ var debug=false;
 
         //BASA == 3 CARTES OK
         //troba la carta guanyadora
-        var cg=basa[qui_guanya2(basa[0],basa[1],basa[2])];
+        let cg=basa[qui_guanya2(basa[0],basa[1],basa[2])];
         if(basa.length==3){
           if(falles_p==false){//=no fallo
             if(cal_matar==false){//=no cal matar
@@ -756,7 +763,7 @@ var debug=false;
               return carta.pal==pal_inicial;
             }else{//cal matar
               //pots matar la guanyadora?
-              var pots_matar=ma_actual.filter(c=>{
+              let pots_matar=ma_actual.filter(c=>{
                 //només si és del pal inicial i la tinc més gran
                 return c.pal==pal_inicial && cg.pal==pal_inicial && c.num>cg.num
               }).length>0;
@@ -780,7 +787,7 @@ var debug=false;
                 return true;//fallo i tinc triomf però no cal matar: qualsevol carta
               }else{//=cal matar
                 //pots matar la guanyadora?
-                var pots_matar=ma_actual.filter(c=>{
+                let pots_matar=ma_actual.filter(c=>{
                   return (
                     //si jo tinc triomf i ell no
                     (c.pal==triomf && cg.pal!=triomf) ||
@@ -812,12 +819,12 @@ var debug=false;
       };
 
       //recorre totes les cartes de la ma
-      for(var i=0;i<cartes.length;i++){
-        var pal=cartes[i].getAttribute('pal');
-        var num=parseInt(cartes[i].getAttribute('num'));
+      for(let i=0;i<cartes.length;i++){
+        let pal=cartes[i].getAttribute('pal');
+        let num=parseInt(cartes[i].getAttribute('num'));
 
         //comprova si seria legal jugar la carta
-        var jugada_legal=es_legal({num,pal});
+        let jugada_legal=es_legal({num,pal});
         //desfer canvis valor manilla i as
         ma_actual.concat(partida.basa).forEach(c=>{
           if(c.num==13) c.num=1;
@@ -841,8 +848,8 @@ var debug=false;
           if(false==this.classList.contains('preseleccionada')){return;}
 
           //emet tirada
-          var pal=this.getAttribute('pal');
-          var num=this.getAttribute('num');
+          let pal=this.getAttribute('pal');
+          let num=this.getAttribute('num');
           num=parseInt(num);
           socket.emit('tirada',{partida_id:partida.creador,pal,num});
           esborra_notificacio();
@@ -860,8 +867,8 @@ var debug=false;
 
           //treu preseleccionada a totes
           (function(){
-            var cartes_pre=document.querySelectorAll('#ma img.carta.preseleccionada');
-            for(var j=0;j<cartes_pre.length;j++){
+            let cartes_pre=document.querySelectorAll('#ma img.carta.preseleccionada');
+            for(let j=0;j<cartes_pre.length;j++){
               cartes_pre[j].classList.remove('preseleccionada');
               cartes_pre[j].removeEventListener('click',listener_tirar);
               cartes_pre[j].addEventListener('click',listener_preseleccio);
@@ -882,7 +889,7 @@ var debug=false;
 
   socket.on('delegar',function(){
     //crea menu delegar
-    var div=document.createElement('div');
+    let div=document.createElement('div');
     tapet.appendChild(div);
     div.classList.add('menu-cantar');
     div.innerHTML="<h5>T'han delegat. Selecciona triomf (click)</h5>";
@@ -890,7 +897,7 @@ var debug=false;
 
     //afegeix imatges asos de cada pal i buti
     ['oros','copes','espases','bastos','botifarra'].forEach(pal=>{
-      var img=document.createElement('img');
+      let img=document.createElement('img');
       div.appendChild(img);
       img.title=pal;
       if(pal=='botifarra'){
@@ -908,7 +915,7 @@ var debug=false;
 
   socket.on('triomf-triat',function(pal){
     //missatge esperant delegat
-    var nick_delegat=getUsername(getCompany(partida.canta));
+    let nick_delegat=getUsername(getCompany(partida.canta));
     if(pal=="delegar"){
       echo("S'ha delegat. Esperant que "+nick_delegat+" canti",true);
       partida.delegat=true;
@@ -917,7 +924,7 @@ var debug=false;
 
     //mostra pal triat
     partida.triomf=pal;
-    var cantant = partida.delegat ? nick_delegat+" (DELEGAT)" : getUsername(partida.canta);
+    let cantant = partida.delegat ? nick_delegat+" (DELEGAT)" : getUsername(partida.canta);
     echo(cantant+' ha cantat '+pal+'. Esperant si es contra',true);
 
     //posa icona pal triat a element triomf
@@ -930,12 +937,12 @@ var debug=false;
 
   socket.on('anuncia-qui-canta',function(sock_id){
     partida.canta=sock_id;
-    var nick=getUsername(partida.canta);
+    let nick=getUsername(partida.canta);
     echo("Esperant que "+nick+" canti");
 
     //crea menú triar pal
     if(sock_id==socket.id){
-      var div=document.createElement('div');
+      let div=document.createElement('div');
       tapet.appendChild(div);
       div.classList.add('menu-cantar');
       div.innerHTML="<h5>Selecciona triomf (click)</h5>";
@@ -943,7 +950,7 @@ var debug=false;
 
       //afegeix: imatges asos de cada pal, buti i delegar
       ['oros','copes','espases','bastos','botifarra','delegar'].forEach(pal=>{
-        var img=document.createElement('img');
+        let img=document.createElement('img');
         div.appendChild(img);
         img.title=pal;
 
@@ -988,14 +995,14 @@ var debug=false;
           return true;
         })
         .forEach(c=>{
-          var pal=c.pal;
-          var num=(c.num<10)?"0"+c.num:c.num;
+          let pal=c.pal;
+          let num=(c.num<10)?"0"+c.num:c.num;
           //fes apareixer la mà rebuda
-          var img=new Image(33,33);
+          let img=new Image(33,33);
           ma.appendChild(img);
           img.src="/img/loading.gif";
 
-          var img2=new Image();
+          let img2=new Image();
           ma.appendChild(img2);
           img2.classList.add('carta');
           img2.setAttribute('pal',pal);
@@ -1006,7 +1013,7 @@ var debug=false;
     });
 
     //amaga botó començar
-    var btn_start=document.querySelector('button.btn_start');
+    let btn_start=document.querySelector('button.btn_start');
     if(btn_start)btn_start.parentNode.removeChild(btn_start);
 
     //comprova variable partida
@@ -1061,14 +1068,14 @@ var debug=false;
     xat.scrollTop=xat.scrollHeight;
 
     //canvia el nom del tapet si s'escau
-    var div_jugador=document.querySelector('div.jugador[socket="'+data.id+'"]');
+    let div_jugador=document.querySelector('div.jugador[socket="'+data.id+'"]');
     if(div_jugador){
       div_jugador.firstChild.nodeValue=data.nou;
     }
   });
 
   socket.on('typing',function(nick){
-    var str="<small>("+nick+" està escrivint...)</small>";
+    let str="<small>("+nick+" està escrivint...)</small>";
     feedback.innerHTML=str;
     //elimina el missatge al cap d'uns segons
     clearTimeout(timeout_typing_event);
@@ -1080,7 +1087,7 @@ var debug=false;
     feedback.innerHTML="";
 
     //busca nick autor missatge
-    var nick=getUsername(data.id);
+    let nick=getUsername(data.id);
     if(!nick){nick="<i>anònim</i>";}
     nick="<span title='"+data.id+"'>"+nick+"</span>";
 
@@ -1103,7 +1110,7 @@ var debug=false;
     usuaris.innerHTML="";
 
     usuaris_connectats.forEach(u=>{
-      var nom=u.nom;
+      let nom=u.nom;
       //posa jugador negreta si ets tu
       if(u.id==socket.id){ nom="<u>"+nom+"</u>"; }
       usuaris.innerHTML+='<li title='+u.id+'>'+nom+'</li>';
@@ -1122,8 +1129,8 @@ var debug=false;
     }
 
     //mira si el client està dins alguna una partida
-    var esta_dins_una_partida=(function(){
-      for(var i=0; i<partides_actuals.length; i++){
+    let esta_dins_una_partida=(function(){
+      for(let i=0; i<partides_actuals.length; i++){
         if(isPart(partides_actuals[i],socket.id)){
           return true;
         }
@@ -1141,7 +1148,7 @@ var debug=false;
     //recorre les partides
     partides_arr.forEach((p,i)=>{
       //div partida
-      var div_partida=document.createElement('div');
+      let div_partida=document.createElement('div');
       partides.appendChild(div_partida);
       div_partida.style.fontSize='smaller';
       div_partida.innerHTML+="Partida "+(i+1);
@@ -1154,7 +1161,7 @@ var debug=false;
       if(p.creador==socket.id){
         //afegeix botó esborrar partida
         (function(){
-          var btn=document.createElement('button');
+          let btn=document.createElement('button');
           div_partida.appendChild(btn);
 
           btn.setAttribute('onclick',"esborrar_partida()");
@@ -1166,7 +1173,7 @@ var debug=false;
           div_partida.innerHTML+=" ";
           //crea btn començar
           if(p.en_marxa==false){
-            var btn=document.createElement('button');
+            let btn=document.createElement('button');
             div_partida.appendChild(btn);
             btn.innerHTML='començar';
             btn.classList.add('btn_start');
@@ -1179,7 +1186,7 @@ var debug=false;
         }
       }else if(p.jugadors<4 && partida==null && esta_dins_una_partida==false){
         //afegeix botó unir-se
-        var btn=document.createElement('button');
+        let btn=document.createElement('button');
         div_partida.appendChild(btn);
         btn.classList.add('btn_join');
         btn.innerHTML='unir-se';
@@ -1194,11 +1201,11 @@ var debug=false;
           p.equips[2].jugadorE,
           p.equips[2].jugadorO,
         ].forEach(id=>{
-          var nick=getUsername(id); //pot ser socket id o "null"
+          let nick=getUsername(id); //pot ser socket id o "null"
           if(!nick){return;}
 
           //crea div jugador
-          var div_jugador=document.createElement('div');
+          let div_jugador=document.createElement('div');
           div_partida.appendChild(div_jugador)
           div_jugador.style.fontSize='smaller';
           div_jugador.innerHTML="- "+nick+" ";

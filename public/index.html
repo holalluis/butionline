@@ -191,7 +191,7 @@
       margin:3px auto 0 auto;
     }
 
-    /*status*/
+    /*status (top right)*/
     #tapet #status_partida {
       background:lightgreen;
       height:20px;
@@ -201,7 +201,7 @@
       top:1px;
     }
 
-    /*triomf*/
+    /*icona triomf partida*/
     #tapet #triomf {
       position:absolute;
       right:1px;
@@ -275,6 +275,7 @@
       font-size:smaller;
       overflow-y:auto;
       padding-left:1px;
+      height:360px;
     }
   </style>
 </head><body>
@@ -308,7 +309,7 @@
         }
 
         //si no GET ni cookie escriu num random 1 a 1000
-        nom_usuari.value="nai_"+(Math.floor(Math.random()*1000)+1);
+        nom_usuari.value="u"+(Math.floor(Math.random()*1000)+1);
       })();
     </script>
   </div>
@@ -346,7 +347,7 @@
   <div id=tapet_container>
     <!--tapet-->
     <div id=tapet>
-      <!--lloc cartes-->
+      <!--cartes-->
       <div>
         <div id=jugadorN class=jugador></div>
         <div id=jugadorS class=jugador></div>
@@ -365,13 +366,12 @@
         <i class="fas fa-expand"></i>
       </button>
     </div>
-
     <!--info partida (barra sota el tapet)-->
     <ul id=info_partida>
       <li>Obligada/101
       <li id=tipus_partida>Partida NO contrada
-      <li>Equip 1: <span id=punts_e1>0</span> punts
-      <li>Equip 2: <span id=punts_e2>0</span> punts
+      <li>E1: <span id=punts_e1>0</span> punts
+      <li>E2: <span id=punts_e2>0</span> punts
     </ul>
   </div>
   <div id=log>log</div>
