@@ -3,7 +3,7 @@ var debug=true;
 var debug=false;
 
 /*Nou client socket */
-//let socket=io.connect('http://164.132.111.240:4000'); //servidor ovh
+//let socket=io.connect('http://051.091.250.220:4000'); //servidor ovh
   let socket=io.connect('http://127.000.000.001:4000'); //local
 //let socket=io.connect('http://192.168.001.131:4000'); //local
 
